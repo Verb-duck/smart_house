@@ -43,7 +43,7 @@
 //---------переменные--------
   //----temperature
   float temperature_day = 22;               //температура дня
-  float temperature_night = 20;             //температура ночи
+  float temperature_night = 19;             //температура ночи
   float temperature_day_off = 20;             //температура простоя
   float temperature_sunrise = 21;             //температура для подъёма
   float temperature_our_house = 16;           //температура если уехал  
