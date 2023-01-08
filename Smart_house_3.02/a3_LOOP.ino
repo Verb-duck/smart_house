@@ -7,6 +7,7 @@ void loop() {
  control_joustick();  
  dimmer_temp ();
  light_bedroom();  
+ ESP_parsing();
 }
 
 //---------подстройка температуры----------

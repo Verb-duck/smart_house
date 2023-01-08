@@ -3,6 +3,7 @@
 void setup() {
   #if (DEBUGING == 1) 
   Serial.begin(9600);
+  Serial3.begin(115200);
   #endif
 //---------пины--------
   pinMode(PHOTO_SENSOR, INPUT); 
