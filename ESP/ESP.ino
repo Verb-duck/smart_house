@@ -64,7 +64,6 @@ void setup() {
     }
   });
   ArduinoOTA.begin();
-  ArduinoOTA.setPassword( "admin");
   Serial.println("Ready");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
@@ -74,7 +73,7 @@ void loop() {
   ArduinoOTA.handle();
   server.handleClient();
   timeClient.update();    //getSeconds() getMinutes() getHours()
- 
+  
 }
 
 //URL 404 
