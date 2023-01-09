@@ -29,8 +29,6 @@ void setup() {
 
   timeClient.begin();  
 
-  server.on("/led1on", handle_);
-  server.on("/", handle_);
   server.onNotFound(handle_NotFound);  //404
   server.begin();
 
@@ -66,6 +64,7 @@ void setup() {
     }
   });
   ArduinoOTA.begin();
+  ArduinoOTA.setPassword( "admin");
   Serial.println("Ready");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
