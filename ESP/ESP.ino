@@ -17,15 +17,15 @@ WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 
 char type ('r');
-
 String buff;                //string буффер для отправки по serial
-char charBuff[30];
+char* charBuff = "hello";
+int sec;
 #include <AsyncStream.h>
 AsyncStream<30> serial(&Serial, ';'); 
 #include <GParser.h>
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(4000);
   Serial.println("Booting");
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, passwordW);
@@ -81,13 +81,9 @@ void loop() {
   ArduinoOTA.handle();
   server.handleClient();
   timeClient.update();    //getSeconds() getMinutes() getHours()
-  SerialWrite();
-  SerialRead();
-
-  if (serial.available()) 
-  {
-    type = Serial.read();
-  }  
+ // SerialWrite();
+  //SerialRead();
+  
 }
 void updateTime() 
 {
@@ -100,25 +96,19 @@ void updateTime()
     buff += ';';
 }
 void SerialWrite() {
-  switch (type){
-
-    case 't':
-    updateTime();
-    Serial.println(buff);
-    type = 'a';
-    break;
-
-    default:
-    break;
+  if(sec != timeClient.getSeconds())
+  {
+    sec = timeClient.getSeconds();
+    Serial.write(charBuff, strlen(charBuff));
   }
 }
 
 void SerialRead() 
 {
-  if (type == 't')
+  if (serial.available()) 
   {
-    buff.toCharArray(charBuff,30);
-  }
+    type = Serial.read();
+  }  
 }
 //URL 404 
 void handle_NotFound()
