@@ -1,12 +1,16 @@
 void ESP_parsing() {
   if (ESP_serial.available()) {     // если данные получены
-    int am = data_esp.split(); 
+    data_esp.split(); 
     char type = data_esp[0];
+    PRINT (" type: ", type);
     switch(type)
     {
       case('t'):
-      now.second = setTime_second; now.minute = setTime_minute; now.hour = setTime_hour;
-      rtc.setTime(now);  
+      DateTime timeSet;
+      timeSet.hour = data_esp.getInt(1);
+      timeSet.minute = data_esp.getInt(2); 
+      timeSet.second = data_esp.getInt(3); 
+      rtc.setTime(timeSet);  
       break;
       default:
       break;

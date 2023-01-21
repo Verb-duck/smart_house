@@ -12,20 +12,20 @@ ESP8266WebServer server(80);
 
 //http time
 #include <NTPClient.h>
-const long utcOffsetInSeconds = 7200;
+const long utcOffsetInSeconds = 10800;
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 
-char type ('r');
-String buff;                //string буффер для отправки по serial
-char* charBuff = "hello";
-int sec;
+char typeCommand;              
+char charBuff[40] { ""};     //буффер для отправки по serial
 #include <AsyncStream.h>
-AsyncStream<30> serial(&Serial, ';'); 
+AsyncStream<40> serial(&Serial); 
 #include <GParser.h>
+GParser parser(serial.buf, ',');
 
 void setup() {
-  Serial.begin(4000);
+ 
+  Serial.begin(115200);
   Serial.println("Booting");
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, passwordW);
@@ -34,12 +34,8 @@ void setup() {
     delay(5000);
     ESP.restart();
   }
-
+  
   timeClient.begin();  
- 
-  buff.reserve(30);     //string буффер для отправки по serial
-  GParser parser(charBuff);
-
   server.onNotFound(handle_NotFound);  //404
   server.begin();
 
@@ -75,43 +71,61 @@ void setup() {
     }
   });
   ArduinoOTA.begin();
+  ArduinoOTA.setPassword(passwordW);
+  delay(10000);
+  Serial.println("Ready");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+  //отправка времени на мегу
+  timeClient.update();  
+  SerialWrite(updateTime);  
 }
 
 void loop() {
   ArduinoOTA.handle();
   server.handleClient();
-  timeClient.update();    //getSeconds() getMinutes() getHours()
- // SerialWrite();
-  //SerialRead();
-  
-}
-void updateTime() 
-{
-    buff += "t,";
-    buff += timeClient.getSeconds();
-    buff += ',';
-    buff += timeClient.getMinutes();
-    buff += ',';
-    buff += timeClient.getHours();
-    buff += ';';
-}
-void SerialWrite() {
-  if(sec != timeClient.getSeconds())
-  {
-    sec = timeClient.getSeconds();
-    Serial.write(charBuff, strlen(charBuff));
-  }
+  timeClient.update();    //getSeconds() getMinutes() getHours()  
+  SerialRead(); 
+  UpdateTimeMidnight();   //синхронизация в полночь
 }
 
-void SerialRead() 
-{
+void SerialWrite(void(*action)()) {  
+  action();   
+  strcat(charBuff, ";");
+  Serial.write((byte*)&charBuff, strlen(charBuff));   
+}
+
+void SerialRead() {
   if (serial.available()) 
   {
-    type = Serial.read();
+    parser.split();            
   }  
 }
+
+void updateTime(){
+  writeCharInBuff('t');
+  writeIntInBuff(timeClient.getHours());
+  writeIntInBuff(timeClient.getMinutes());
+  writeIntInBuff(timeClient.getSeconds());
+}
+void writeCharInBuff(char value){
+  charBuff[0] = value;
+  charBuff[1] = '\0';
+}
+void writeIntInBuff ( int value){
+  strcat(charBuff, ",");
+  char temp[10];
+  itoa(value,temp, DEC);
+  strcat(charBuff ,temp);
+}
+void UpdateTimeMidnight(){
+  if (timeClient.getHours() == 0 && timeClient.getMinutes() == 0 &&
+      timeClient.getSeconds() == 0)
+      {
+        SerialWrite(updateTime);
+      }
+}
 //URL 404 
-void handle_NotFound()
-{
+void handle_NotFound(){
   server.send(404, "text/plain", "Not found");
 }

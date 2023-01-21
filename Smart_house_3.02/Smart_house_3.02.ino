@@ -1,5 +1,5 @@
-#define ver "3.02 "
-#define DEBUGING 0 
+#define ver "3.03 "
+#define DEBUGING 1 
                              
 
 //--------настройка--------
