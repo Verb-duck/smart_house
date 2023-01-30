@@ -1,19 +1,24 @@
 void ESP_parsing() {
   if (ESP_serial.available()) {     // если данные получены
-    data_esp.split(); 
-    char type = data_esp[0];
-    PRINT (" type: ", type);
+  PRINT(ESP_serial.buf, " ");
+    ESP_parser.split(); 
+    char type = ESP_serial.buf[0];
+    
     switch(type)
     {
       case('t'):
-      DateTime timeSet;
-      timeSet.hour = data_esp.getInt(1);
-      timeSet.minute = data_esp.getInt(2); 
-      timeSet.second = data_esp.getInt(3); 
-      rtc.setTime(timeSet);  
+      timeNow.hour = ESP_parser.getInt(1);
+      timeNow.minute = ESP_parser.getInt(2); 
+      timeNow.second = ESP_parser.getInt(3); 
+      rtc.setTime(timeNow);  
       break;
       default:
       break;
     }
+  }
+  if(Serial.available()) {
+    char type = Serial.read();
+    PRINT( " serial out, char = ", type);
+    Serial3.write(type);
   }
 }

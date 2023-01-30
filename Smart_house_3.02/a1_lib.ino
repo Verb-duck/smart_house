@@ -69,6 +69,6 @@
 //------parser serial------  
 #include "AsyncStream.h"
 #include "GParser.h"
-AsyncStream<100> ESP_serial(&Serial3,';');
-GParser data_esp (ESP_serial.buf);
+AsyncStream<40> ESP_serial(&Serial3,';',100);
+GParser ESP_parser (ESP_serial.buf, ',');
 

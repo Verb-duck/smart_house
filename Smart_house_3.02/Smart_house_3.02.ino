@@ -45,7 +45,7 @@
   float temperature_day = 22;               //температура дня
   float temperature_night = 19;             //температура ночи
   float temperature_day_off = 20;             //температура простоя
-  float temperature_sunrise = 21;             //температура для подъёма
+  float temperature_sunrise = 20;             //температура для подъёма
   float temperature_our_house = 16;           //температура если уехал  
   float temperature_now ;                     //температура измерения
   //----lighting----
@@ -78,7 +78,7 @@
   
   #if (DEBUGING == 1) 
     #define PRINT(title, y) \
-    Serial.print(title);\
+    Serial.print (title);\
     Serial.print(": ");\
     Serial.println(y);
     #define LCDdebug "DEBUG"

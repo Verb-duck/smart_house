@@ -16,10 +16,10 @@ const long utcOffsetInSeconds = 10800;
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 
-char typeCommand;              
+int sec;
 char charBuff[40] { ""};     //буффер для отправки по serial
 #include <AsyncStream.h>
-AsyncStream<40> serial(&Serial); 
+AsyncStream<40> serial(&Serial,';'); 
 #include <GParser.h>
 GParser parser(serial.buf, ',');
 
@@ -72,7 +72,7 @@ void setup() {
   });
   ArduinoOTA.begin();
   ArduinoOTA.setPassword(passwordW);
-  delay(10000);
+  delay(30000);
   Serial.println("Ready");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
@@ -86,44 +86,52 @@ void loop() {
   server.handleClient();
   timeClient.update();    //getSeconds() getMinutes() getHours()  
   SerialRead(); 
-  UpdateTimeMidnight();   //синхронизация в полночь
+  updateTimeMidnight();   //синхронизация в полночь  
 }
-
-void SerialWrite(void(*action)()) {  
-  action();   
-  strcat(charBuff, ";");
-  Serial.write((byte*)&charBuff, strlen(charBuff));   
+//отправка данных в порт
+void SerialWrite(void(*action)()){
+  action();                      //выбрать какие данные
+  strcat(charBuff, ";");         //добавляем термиатор
+  Serial.write(charBuff, strlen(charBuff)); //отправляем  
 }
-
+//чтение данных
 void SerialRead() {
   if (serial.available()) 
   {
-    parser.split();            
+    parser.split();   
+    if(serial.buf[0] == 't')
+      SerialWrite(updateTime);       
   }  
 }
-
+//запись времени в буфер
 void updateTime(){
   writeCharInBuff('t');
   writeIntInBuff(timeClient.getHours());
   writeIntInBuff(timeClient.getMinutes());
   writeIntInBuff(timeClient.getSeconds());
 }
+//запись начального символа в буффер
 void writeCharInBuff(char value){
   charBuff[0] = value;
   charBuff[1] = '\0';
 }
+//функция добавления числа в буфер
 void writeIntInBuff ( int value){
   strcat(charBuff, ",");
-  char temp[10];
+  char temp[4];
   itoa(value,temp, DEC);
   strcat(charBuff ,temp);
 }
-void UpdateTimeMidnight(){
+//синхронизация времени с мегой в полночь
+void updateTimeMidnight(){
+  //static bool updateTime = false;
   if (timeClient.getHours() == 0 && timeClient.getMinutes() == 0 &&
-      timeClient.getSeconds() == 0)
+      timeClient.getSeconds() == 0 ) 
       {
         SerialWrite(updateTime);
+        delay(1000);
       }
+  
 }
 //URL 404 
 void handle_NotFound(){
