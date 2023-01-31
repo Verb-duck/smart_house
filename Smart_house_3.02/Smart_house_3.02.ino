@@ -1,6 +1,5 @@
 #define ver "3.03 "
-#define DEBUGING 1 
-                             
+#define DEBUGING 1                              
 
 //--------настройка--------
   #define PERIOD_SENSOR_TEMPERATURE 1    //время опроса датчика температуры сек
@@ -12,7 +11,7 @@
             #define setTime_second  1
             #define setTime_minute  2
             #define setTime_hour  3   
-  
+  #define key_EEPROM  2                  // запись/сброс настроек в EEPROM при прошивке, сменить число
 
 //---------пины--------
   #define ZERO_CROSS 1        //детектор ноля в 220в,  не используется
@@ -46,7 +45,7 @@
   float temperature_night = 19;             //температура ночи
   float temperature_day_off = 20;             //температура простоя
   float temperature_sunrise = 20;             //температура для подъёма
-  float temperature_our_house = 16;           //температура если уехал  
+  float temperature_our_house = 10;           //температура если уехал  
   float temperature_now ;                     //температура измерения
   //----lighting----
   uint8_t random_color;

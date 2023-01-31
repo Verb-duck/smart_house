@@ -109,14 +109,17 @@ void script_house_show () {
   LCD.print("Script: ");
   switch (script_house) {
     case(MOVE) :
-    LCD.print( "MOVE   " );
+    LCD.print( "MOVE " );
     break;
     case(NO_MOVE) :
     LCD.print( "NO_MOVE " );
     break;
     case(SLEEP) :
-    LCD.print( "SLEEP   " );
+    LCD.print( "SLEEP " );
     break;
+    case(OUTSIDE_THE_HOME) :
+    LCD.print( "OUTSIDE THE HOME " );
+    break;    
     case(SUNRISE) :
     LCD.print( "SUNRISE " );
     break;

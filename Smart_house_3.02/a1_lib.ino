@@ -1,3 +1,5 @@
+#include <EEPROM.h>
+
 //--------iremote--------
 #include "IRLremote.h"
   CHashIR IRLremote;
@@ -67,8 +69,10 @@
   Fun_cleaner fun(CLEANER_FUN_PIN) ;
   
 //------parser serial------  
-#include "AsyncStream.h"
-#include "GParser.h"
-AsyncStream<40> ESP_serial(&Serial3,';',100);
-GParser ESP_parser (ESP_serial.buf, ',');
+  #include "AsyncStream.h"
+  #include "GParser.h"
+  AsyncStream<40> ESP_serial(&Serial3,';',100);
+  GParser ESP_parser (ESP_serial.buf, ',');
+
+
 

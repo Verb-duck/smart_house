@@ -6,10 +6,10 @@ void accomplishment_script_house () {
   MOVE,
   NO_MOVE,
   SLEEP, 
-  SUNRISE, */
+  SUNRISE, 
+  OUTSIDE_THE_HOME,*/
 
-//------------DAY----------------
-  
+//----------DAY----------------  
     switch (script_house) {
       case( MOVE) :           
       if ( last_script_house != MOVE ) {            //если первый запуск
@@ -21,7 +21,8 @@ void accomplishment_script_house () {
         randomSeed( millis());  led_pattern_number = random(quantity_led_pattern);  //рандомный выбор режима подсветки
         last_script_house = MOVE;
         fun.cleaner(off);
-        
+        EEPROM.put(22, script_house);
+        PRINT( " EEPROM.read script_house ", EEPROM.read(22)) ;
       }
       if ( pir_sensor ()) {            
         timer_waiting = millis();       //сбрасываем таймер выключения
@@ -49,8 +50,7 @@ void accomplishment_script_house () {
       break;     
 //**********DAY**********
 
-//----------------NIGHT-------------
-    
+//----------NIGHT-------------    
         case( SLEEP) :
         if ( last_script_house != SLEEP ) {            //если первый запуск
           mode_light_bedroom = SUNSET_LIGHT; 
@@ -58,12 +58,14 @@ void accomplishment_script_house () {
           heater_room_1.set_temperature (temperature_night);
           heater_room_2.set_temperature (temperature_night);
           fun.cleaner(off); 
+          EEPROM.put(22, script_house);
+          EEPROM.put(24, last_script_house);
         }
        //включение будильника  
         if (sunriseStartTime == timeNow) {
           script_house = SUNRISE;
         }
-/*      //включение ночной подсветки
+ /*      //включение ночной подсветки
         static uint8_t count_start_nigh_light = 0;
         if( pir_sensor () && (millis() - timer_waiting > 3000)) {
           count_start_nigh_light ++;
@@ -100,7 +102,19 @@ void accomplishment_script_house () {
         break;
       
 //**********NIGHT**********  
-      
+
+//----------OUTSIDE_THE_HOME------
+      case(OUTSIDE_THE_HOME):
+      if ( last_script_house != OUTSIDE_THE_HOME) {
+        last_script_house =  OUTSIDE_THE_HOME;
+        heater_room_1.set_temperature (temperature_our_house);
+        heater_room_2.set_temperature (temperature_our_house);
+        mode_light_bedroom = OFF_LIGHT;
+        EEPROM.put(22, script_house); 
+      }
+      break;
+//**********OUTSIDE_THE_HOME 
+
       default :
       break;
   }
