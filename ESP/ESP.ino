@@ -4,11 +4,9 @@
 #include <ArduinoOTA.h>
 #include <Arduino.h>
 
+ 
 #define ssid  "5G OBLUCHATEL"
 #define passwordW "00000000"
-//URL request
-#include <ESP8266WebServer.h>
-ESP8266WebServer server(80);
 
 //http time
 #include <NTPClient.h>
@@ -16,17 +14,24 @@ const long utcOffsetInSeconds = 10800;
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 
-int sec;
-char charBuff[40] { ""};     //буффер для отправки по serial
-#include <AsyncStream.h>
-AsyncStream<40> serial(&Serial,';'); 
-#include <GParser.h>
-GParser parser(serial.buf, ',');
+#include <FastBot.h>
+FastBot bot("6130227271:AAHMnTK8NFMRnXyOqVDUXeMPnWHVo__k3nI"); 
 
-void setup() {
- 
+//-------serial-----
+  char charBuff[40] { ""};     //буффер для отправки по serial
+  #include <AsyncStream.h>
+  AsyncStream<40> serial(&Serial,';'); 
+  #include <GParser.h>
+  GParser parser(serial.buf, ',');
+
+
+void setup() { 
+  bot.setChatID(284342215);  
+  bot.attach(newMsg);
+  bot.sendMessage("hello");
+
   Serial.begin(115200);
-  Serial.println("Booting");
+//wifi connect
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, passwordW);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
@@ -34,12 +39,7 @@ void setup() {
     delay(5000);
     ESP.restart();
   }
-  
-  timeClient.begin();  
-  server.onNotFound(handle_NotFound);  //404
-  server.begin();
-
-   ArduinoOTA.onStart([]() {
+  ArduinoOTA.onStart([]() {
     String type;
     if (ArduinoOTA.getCommand() == U_FLASH) {
       type = "sketch";
@@ -72,21 +72,28 @@ void setup() {
   });
   ArduinoOTA.begin();
   ArduinoOTA.setPassword(passwordW);
+  
+//отправка времени на мегу
   delay(30000);
   Serial.println("Ready");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
-  //отправка времени на мегу
+  timeClient.begin();  
   timeClient.update();  
   SerialWrite(updateTime);  
 }
 
 void loop() {
   ArduinoOTA.handle();
-  server.handleClient();
-  timeClient.update();    //getSeconds() getMinutes() getHours()  
+  timeClient.update();    //getSeconds() getMinutes() getHours()
+  bot.tick();             //обработчик телеграмм бота    
   SerialRead(); 
   updateTimeMidnight();   //синхронизация в полночь  
+}
+//функции-обработчика сообщений телеграмм бота
+void newMsg(FB_msg& msg){
+   if (msg.OTA) bot.update();
+  
 }
 //отправка данных в порт
 void SerialWrite(void(*action)()){
@@ -132,8 +139,4 @@ void updateTimeMidnight(){
         delay(1000);
       }
   
-}
-//URL 404 
-void handle_NotFound(){
-  server.send(404, "text/plain", "Not found");
 }
