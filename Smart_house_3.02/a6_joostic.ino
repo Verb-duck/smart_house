@@ -61,7 +61,7 @@ void control_joustick(){
   break;
 
   case(TEMPERATURE) :
-  if (joystick.click_up()) temperature_day += 0.1;
+  if (joystick.click_up()) temperature_day += 0.1; 
   if (joystick.click_down()) temperature_day -= 0.1;
   
   case (BRIGHTNESS) :
@@ -86,5 +86,5 @@ void control_joustick(){
   default :
   break;
  }
-
+ 
 }

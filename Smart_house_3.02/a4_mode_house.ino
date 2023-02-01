@@ -22,7 +22,6 @@ void accomplishment_script_house () {
         last_script_house = MOVE;
         fun.cleaner(off);
         EEPROM.put(22, script_house);
-        PRINT( " EEPROM.read script_house ", EEPROM.read(22)) ;
       }
       if ( pir_sensor ()) {            
         timer_waiting = millis();       //сбрасываем таймер выключения
@@ -86,6 +85,7 @@ void accomplishment_script_house () {
           heater_room_2.set_temperature (temperature_sunrise);
           mode_light_bedroom = SUNRISE_LIGHT;
           last_script_house == SUNRISE;
+          EEPROM.put(22, script_house); 
         }
       //выключение будильника при движении    
         static uint8_t count_start_day = 0;
