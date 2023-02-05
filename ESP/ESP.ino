@@ -16,9 +16,11 @@ NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 
 #include <FastBot.h>
 FastBot bot("6130227271:AAHMnTK8NFMRnXyOqVDUXeMPnWHVo__k3nI"); 
+bool flagExpectMessage = false;
+int timeRestartExpect;
+char charBuff[40] {""};     //буффер для приёма/правки по serial
 
 //-------serial-----
-  char charBuff[40] { ""};     //буффер для отправки по serial
   #include <AsyncStream.h>
   AsyncStream<40> serial(&Serial,';'); 
   #include <GParser.h>
@@ -27,8 +29,7 @@ FastBot bot("6130227271:AAHMnTK8NFMRnXyOqVDUXeMPnWHVo__k3nI");
 
 void setup() { 
   bot.setChatID(284342215);  
-  bot.attach(newMsg);
-  bot.sendMessage("hello");
+  bot.attach(newMsg);  
   Serial.begin(115200);
 //wifi connect
   WiFi.mode(WIFI_STA);
@@ -74,7 +75,6 @@ void setup() {
   
 //отправка времени на мегу
   delay(1000);
-  Serial.println("Ready");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
   timeClient.begin();  
@@ -89,54 +89,79 @@ void loop() {
   SerialRead(); 
   updateTimeMidnight();   //синхронизация в полночь  
 }
-//функции-обработчика сообщений телеграмм бота
-void newMsg(FB_msg& msg){
-  if (msg.OTA) bot.update();
-  Serial.write(msg.text.c_str(), msg.text.length()); //отправляем 
-}
+//функции-обработчика сообщений телеграмм бота 
+  void newMsg(FB_msg& msg){
+    if (msg.OTA) bot.update();
+    if(msg.text[0] == '/' || flagExpectMessage)       //если пришла управляющая команда
+    {
+      charBuff[0] = '/'; charBuff[2] = '\0';    //начинаем сообщение
+      //открываем возможность для приёма сообщений без '/'
+        if(!flagExpectMessage)
+        {
+          flagExpectMessage = true;       
+          timeRestartExpect = millis();   //счётчик ожижания сообщения без '/'
+        }
+
+      //ищем совпадения
+        if(msg.text.lastIndexOf("/tempDay") != -1)
+        {
+          writeCharInBuff('a');
+          writeCharInBuff('a');
+        }
+    }
+   Serial.write(msg.text.c_str(), msg.text.length()); //отправляем 
+    if(flagExpectMessage && millis() - timeRestartExpect > 2000) 
+    {
+      flagExpectMessage = false;
+    } 
+  }
+
+//bot.sendMessage("hello");
+
 //отправка данных в порт
-void SerialWrite(void(*action)()){
-  action();                      //выбрать какие данные
-  strcat(charBuff, ";");         //добавляем термиатор
-  Serial.write(charBuff, strlen(charBuff)); //отправляем  
-}
-//чтение данных
-void SerialRead() {
-  if (serial.available()) 
-  {
+  void SerialWrite(void(*action)()){
+    action();                      //выбрать какие данные
+    strcat(charBuff, ";");         //добавляем термиатор
+    Serial.write(charBuff, strlen(charBuff)); //отправляем  
+  }
+//чтение данных из Serial
+  void SerialRead() {
+   if (serial.available()) 
+   {
     parser.split();   
     if(serial.buf[0] == 't')
       SerialWrite(updateTime);       
-  }  
-}
+    }  
+  } 
+//добавление символа в буффер на отправку
+  void writeCharInBuff(char value){
+    int index = 0;
+    while(charBuff[index++] != "\0")  //ищем конец буфера
+    charBuff[index++] = value;
+    charBuff[index] = '\0';
+  }
+//функция добавления числа в собщение на отправку
+  void writeIntInBuff ( int value){
+    strcat(charBuff, ",");  //дописываем разделитель в буфер
+    char temp[4];
+    itoa(value,temp, DEC);  //преобразовываем число в char
+    strcat(charBuff ,temp); //дописываем число в буфер
+  }
 //запись времени в буфер
-void updateTime(){
-  writeCharInBuff('t');
-  writeIntInBuff(timeClient.getHours());
-  writeIntInBuff(timeClient.getMinutes());
-  writeIntInBuff(timeClient.getSeconds());
-}
-//запись начального символа в буффер
-void writeCharInBuff(char value){
-  charBuff[0] = value;
-  charBuff[1] = '\0';
-}
-//функция добавления числа в буфер
-void writeIntInBuff ( int value){
-  strcat(charBuff, ",");
-  char temp[4];
-  itoa(value,temp, DEC);
-  strcat(charBuff ,temp);
-}
+  void updateTime(){
+    writeCharInBuff('t');
+    writeIntInBuff(timeClient.getHours());
+    writeIntInBuff(timeClient.getMinutes());
+    writeIntInBuff(timeClient.getSeconds());
+  }
 //синхронизация времени с мегой в полночь
-void updateTimeMidnight(){
+  void updateTimeMidnight(){
   //static bool updateTime = false;
   if (timeClient.getHours() == 0 && timeClient.getMinutes() == 0 &&
       timeClient.getSeconds() == 0 ) 
       {
         SerialWrite(updateTime);
         delay(1000);
-      }
-  
-}
+      }  
+  }
 

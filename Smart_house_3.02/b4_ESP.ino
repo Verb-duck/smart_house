@@ -5,11 +5,15 @@ void ESP_parsing() {
     char set = ESP_serial.buf[0];
     if (set == '/')
     { 
-      char command = ESP_serial.buf[3];  
+      char command = ESP_serial.buf[1];  
       switch(command)
       {
-      case('a'):
-
+      case('a'):      
+        if(ESP_serial.buf[3] == 'a') temperature_day = ESP_parser.getInt(1);
+        if(ESP_serial.buf[3] == 'b') temperature_night = ESP_parser.getInt(1);
+        if(ESP_serial.buf[3] == 'c') temperature_day_off  = ESP_parser.getInt(1);
+        if(ESP_serial.buf[3] == 'd') temperature_sunrise = ESP_parser.getInt(1);
+        if(ESP_serial.buf[3] == 'e') temperature_our_house = ESP_parser.getInt(1);
       case('t'):
         timeNow.hour = ESP_parser.getInt(1);
         timeNow.minute = ESP_parser.getInt(2); 
