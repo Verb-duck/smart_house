@@ -72,20 +72,7 @@
     EEPROM.get(pp.addr,pp.value) ;
   return 0;
   } 
-
  
-  /*  -----EEPROM addr------
-    0  key_EEPROM              
-    2  temperature_day         
-    4  temperature_night       
-    6  temperature_day_off     
-    8  temperature_sunrise     
-    10 temperature_our_house          
-    12 work_alarm_clock      
-    13 script_house          enum 2 byte
-    15 last_script_house     
-    */
-
 //---------переменные--------
 //----temperature
 auto temperature_day = create(220,INT);             //температура дня, *10 -> уйти от float

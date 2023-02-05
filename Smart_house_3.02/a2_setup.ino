@@ -38,15 +38,21 @@ void setup() {
  
 
 //-------чтение/запиись настроек в еепром
+
+std::cout << "temperature_day " << temperature_day.value << " \t adddr " << temperature_day.addr << std::endl; 
+std::cout << "temperature_night " << temperature_night.value << " \t adddr " << temperature_night.addr << std::endl; 
+std::cout << "temperature_day_off " << temperature_day_off.value << " \t adddr " << temperature_day_off.addr << std::endl; 
+std::cout << "last_script_house " << last_script_house.value << " \t adddr " << last_script_house.addr << std::endl; 
+
   if(key_EEPROM != EEPROM.read(0)){     //запись в еепром
     EEPROM.put(0, key_EEPROM) ;
-    writeEEPROM(temperature_day) ; PRINT("temperature_day" , temperature_day.addr);
-    writeEEPROM(temperature_night);  PRINT("temperature_night" , temperature_night.addr);
-    writeEEPROM(temperature_day_off);  PRINT("temperature_day_off" , temperature_day_off.addr);
+    writeEEPROM(temperature_day) ; 
+    writeEEPROM(temperature_night);  
+    writeEEPROM(temperature_day_off);  
     writeEEPROM(temperature_sunrise);
     writeEEPROM(temperature_our_house);       
-    writeEEPROM(script_house);          PRINT("script_house" , script_house.addr);
-    writeEEPROM(last_script_house);   PRINT("last_script_house" , last_script_house.addr);
+    writeEEPROM(script_house);         
+    writeEEPROM(last_script_house);   
     writeEEPROM(work_alarm_clock);      
     PRINT("update EEPROM settings", " " );
   }
