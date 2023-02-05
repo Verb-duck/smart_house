@@ -74,12 +74,13 @@ void setup() {
   ArduinoOTA.setPassword(passwordW);
   
 //отправка времени на мегу
-  delay(1000);
+  delay(10000);
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
   timeClient.begin();  
-  timeClient.update();  
-  SerialWrite(updateTime);  
+  timeClient.update(); 
+  delay(1000); 
+  updateTime();
 }
 
 void loop() {
@@ -92,10 +93,10 @@ void loop() {
 //функции-обработчика сообщений телеграмм бота 
   void newMsg(FB_msg& msg){
     if (msg.OTA) bot.update();
-    
     if(msg.text[0] == '/' || flagExpectMessage)       //если пришла управляющая команда
     {
-      charBuff[0] = '/'; charBuff[2] = '\0';    //начинаем сообщение
+      charBuff[0] = '\0';     //обнуляем буффер
+      writeCharInBuff('/');
       //открываем возможность для приёма сообщений без '/'
         if(!flagExpectMessage)
         {
@@ -106,13 +107,35 @@ void loop() {
       //ищем совпадения
         if(msg.text.lastIndexOf("/tempDay") != -1)
         {
-          writeCharInBuff('a');
-          writeCharInBuff('a');
+          strcat(charBuff, "/,a,a,");
           writeIntInBuff(21);
         }
+        if(msg.text.lastIndexOf("/normal") != -1)
+        { 
+          strcat(charBuff, "/,с,a"); 
+        }
+        if(msg.text.lastIndexOf("/sleep") != -1)
+        { 
+          strcat(charBuff, "/,с,b"); 
+        }
+        if(msg.text.lastIndexOf("/leave_home") != -1)
+        { 
+          strcat(charBuff, "/,с,c"); 
+        }
+        if(msg.text.lastIndexOf("/vieving_film") != -1)
+        { 
+          strcat(charBuff, "/,с,d"); 
+        }
+        if(msg.text.lastIndexOf("/return_home") != -1)
+        { 
+          strcat(charBuff, "/,с,f"); 
+        }
     }
-    //отправляем 
-    Serial.write(charBuff, strlen(charBuff)); 
+
+    //отправка данных в порт
+    strcat(charBuff, ";");         //добавляем термиатор
+    Serial.write(charBuff, strlen(charBuff)); //отправляем 
+
     if(flagExpectMessage && millis() - timeRestartExpect > 2000) 
     {
       flagExpectMessage = false;
@@ -140,8 +163,9 @@ void loop() {
   void writeCharInBuff(char value){
     int index = 0;
     while(charBuff[index++] != '\0')  //ищем конец буфера
+      {++index;}
     charBuff[index++] = value;
-    charBuff[index++] = ';';
+    charBuff[index++] = ',';
     charBuff[index] = '\0';
 
   }
@@ -152,12 +176,21 @@ void loop() {
     itoa(value,temp, DEC);  //преобразовываем число в char
     strcat(charBuff ,temp); //дописываем число в буфер
   }
+  void writeIntFloatBuff ( float value){
+    strcat(charBuff, ",");  //дописываем разделитель в буфер
+    char temp[4];
+    //dtostrf(value,temp, DEC);  //преобразовываем число в char
+    strcat(charBuff ,temp); //дописываем число в буфер
+  }
 //запись времени в буфер
-  void updateTime(){
-    writeCharInBuff('t');
+    void updateTime(){
+    charBuff[0] = '\0';
+    strcat(charBuff, "/,b,a"); 
     writeIntInBuff(timeClient.getHours());
     writeIntInBuff(timeClient.getMinutes());
     writeIntInBuff(timeClient.getSeconds());
+    strcat(charBuff, ";");         //добавляем термиатор
+    Serial.write(charBuff, strlen(charBuff)); //отправляем   
   }
 //синхронизация времени с мегой в полночь
   void updateTimeMidnight(){
@@ -165,8 +198,7 @@ void loop() {
   if (timeClient.getHours() == 0 && timeClient.getMinutes() == 0 &&
       timeClient.getSeconds() == 0 ) 
       {
-        SerialWrite(updateTime);
+        updateTime();
         delay(1000);
       }  
   }
-

@@ -1,43 +1,88 @@
 void ESP_parsing() {
-  if (ESP_serial.available()) {     // если данные получены
-  PRINT(ESP_serial.buf, " ");
-    ESP_parser.split();
-    char set = ESP_serial.buf[0];
-    if (set == '/')
+  if (ESP_serial.available()) {    // если данные получены
+    //  /,a,a,234,6;   формат принимаемой строки      
+    PRINT("new message ", ESP_serial.buf);
+    char command1 = ESP_serial.buf[2]; 
+    char command2 = ESP_serial.buf[4]; 
+    ESP_parser.split();           //разделяeт строку на подстроки, заменяя разделители на NULL
+    if (ESP_serial.buf[0] == '/') 
     { 
-      char command = ESP_serial.buf[1];  
-      switch(command)
+      PRINT( " command1 ",command1);
+      PRINT( " command2 ",command2);
+      switch(command1)
       {
-      case('a'):      
-        if(ESP_serial.buf[3] == 'a') temperature_day = ESP_parser.getInt(2);
-        if(ESP_serial.buf[3] == 'b') temperature_night = ESP_parser.getInt(1);
-        if(ESP_serial.buf[3] == 'c') temperature_day_off  = ESP_parser.getInt(1);
-        if(ESP_serial.buf[3] == 'd') temperature_sunrise = ESP_parser.getInt(1);
-        if(ESP_serial.buf[3] == 'e') temperature_our_house = ESP_parser.getInt(1);
-      case('t'):
-        timeNow.hour = ESP_parser.getInt(1);
-        timeNow.minute = ESP_parser.getInt(2); 
-        timeNow.second = ESP_parser.getInt(3); 
-        rtc.setTime(timeNow);  
+      case('a'):          //temperature
+        switch(command2)
+        {
+          case('a'):
+            temperature_day = ESP_parser.getFloat(3) * 10;
+            break;
+          case('b'):
+            temperature_night = ESP_parser.getFloat(3) * 10;
+            break;
+          case('c'):
+            temperature_day_off  = ESP_parser.getFloat(3) * 10;
+            break;
+          case('d'):
+            temperature_sunrise = ESP_parser.getFloat(3) * 10;
+            break;
+          case('e'):
+            temperature_our_house = ESP_parser.getFloat(3) * 10;
+            break;
+          default:
+            break;
+        }        
+      case('b'):          //time, alarm clock
+        if(command2 == 'a')
+        {
+          timeNow.hour = ESP_parser.getInt(3);
+          timeNow.minute = ESP_parser.getInt(4); 
+          timeNow.second = ESP_parser.getInt(5); 
+          rtc.setTime(timeNow);  
+        }
+        if (command2 == 'b')
+        {
+          alarmClockH = ESP_parser.getInt(3);
+          alarmClockM = ESP_parser.getInt(4); 
+          sunriseStartSet();
+          work_alarm_clock = true;
+        }
+        if (command2 == 'c')
+          work_alarm_clock = false;
         break;
-      case('s'):
-        script_house = SLEEP;
+      case('c'):          //script house
+      PRINT( " 1 ","");
+        switch(command2)
+        {
+          case('a'):
+            PRINT( " 2 ","");
+            script_house = MOVE;
+            break;
+          case('b'):
+            script_house = SLEEP;
+            break;
+          case('c'):
+            script_house = OUTSIDE_THE_HOME;
+            break;
+          case('d'):
+            script_house = VIEWING_FILM;
+            break;
+          case('e'):
+            script_house = NIGHT_MOVE;
+            break;
+          case('f'):
+            script_house = NO_MOVE;
+            break;
+          default:
+            break;
+        } 
         break;
-        case('m'):
-        script_house = MOVE;
-        break;
-      case('o'):
-        script_house = OUTSIDE_THE_HOME;
+      case('d'):
         break;
       default:
         break;
+      }
     }
-  }
-  }
-  if(Serial.available()) {
-    char type = Serial.read();
-    PRINT( " serial out, char = ", type);
-    Serial3.write(type);
-  }
+  }  
 }
 

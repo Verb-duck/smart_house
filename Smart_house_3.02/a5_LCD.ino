@@ -175,11 +175,11 @@ void alarm_clock_show() {
   static char alarm[6];
   if (last_mode_menu != mode_menu) {
     LCD.print( "Alarm clock: "); 
-    alarm[0] =  alarmTime.hour / 10 + '0';
-    alarm[1] =  alarmTime.hour % 10 + '0';
+    alarm[0] =  alarmClockH.value / 10 + '0';
+    alarm[1] =  alarmClockH.value % 10 + '0';
     alarm[2] = ':';
-    alarm[3] =  alarmTime.minute / 10 + '0';
-    alarm[4] =  alarmTime.minute % 10 + '0';
+    alarm[3] =  alarmClockM.value / 10 + '0';
+    alarm[4] =  alarmClockM.value % 10 + '0';
     alarm[5] = '\0';
     LCD.print (alarm); 
   } 

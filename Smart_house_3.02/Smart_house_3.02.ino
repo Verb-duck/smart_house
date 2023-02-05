@@ -11,7 +11,7 @@
 #define setTime_second 1
 #define setTime_minute 2
 #define setTime_hour 3
-#define key_EEPROM 1  // запись/сброс настроек в EEPROM при прошивке, сменить число
+#define key_EEPROM 2  // запись/сброс настроек в EEPROM при прошивке, сменить число
 
 //---------пины--------
 #define ZERO_CROSS 1        //детектор ноля в 220в,  не используется
@@ -49,19 +49,19 @@
     {
       this->value = value; 
       writeEEPROM( *this);
-      Serial.print( this->value) ; Serial.print( "\t") ; Serial.println(addr) ;  
+      Serial.print( "new value:\t");Serial.println( this->addr);
     }
     void operator +=(Type value) 
     {
       this->value += value; 
       writeEEPROM( *this);
-      Serial.print( this->value) ; Serial.print( "\t") ; Serial.println(addr) ;  
+      Serial.print( "new value:\t");Serial.println( this->addr);
     }
     void operator -=(Type value) 
     {
       this->value -= value; 
       writeEEPROM( *this);
-      Serial.print( this->value) ; Serial.print( "\t") ; Serial.println(addr) ;  
+      Serial.print( "new value:\t");Serial.println(this-> addr);
     }
     
   };

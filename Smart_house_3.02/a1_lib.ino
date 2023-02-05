@@ -20,8 +20,8 @@
   #define FRAMES_PER_SECOND 60
  
   using ledShov = void(*[])();
-  ledShov led_pattern = {Cylon, rainbow, rainbow_With_Glitter, confetti, sinelon, juggle, bpm, color_Temperature };
-  const char *led_pattern_name[] ={"cylon", "rainbow", "rainbowWithGlitter", "confetti", "sinelon", "juggle", "bpm", "color temperature"};
+  ledShov led_pattern = {Color, Cylon, rainbow, rainbow_With_Glitter, confetti, sinelon, juggle, bpm, color_Temperature };
+  const char *led_pattern_name[] ={"color", "cylon", "rainbow", "rainbowWithGlitter", "confetti", "sinelon", "juggle", "bpm", "color temperature"};
   int8_t led_pattern_number = 0;
   uint8_t quantity_led_pattern = sizeof(led_pattern) / sizeof(led_pattern[0]);
   uint8_t gHue = 0; // rotating "base color" used by many of the patterns
@@ -43,7 +43,8 @@
   #include <microDS3231.h>
   MicroDS3231 rtc;                        // SDA A4 SCL A5  
   DateTime timeNow;
-  DateTime alarmTime{ 00, 00 , 10};
+  auto alarmClockH(create(9, INT));
+  auto alarmClockM(create(10, INT));
   DateTime sunriseStartTime;
   bool operator == (DateTime & t1 , DateTime &t2) {
     if (t1.minute == t2.minute && t1.hour == t2.hour) return true;

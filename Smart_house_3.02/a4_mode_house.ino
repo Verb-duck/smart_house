@@ -1,13 +1,6 @@
 
 void accomplishment_script_house () {  
-  static uint32_t timer_waiting;        
-      
-/* script_house:
-  MOVE,
-  NO_MOVE,
-  SLEEP, 
-  SUNRISE, 
-  OUTSIDE_THE_HOME,*/
+  static uint32_t timer_waiting;  
 
 //----------DAY----------------  
     switch (script_house.value) {
@@ -16,9 +9,9 @@ void accomplishment_script_house () {
         heater_room_1.set_temperature (temperature_day.value);
         heater_room_2.set_temperature (temperature_day.value);
         mode_light_bedroom = START_LIGHT;
-        randomSeed( millis());  random_color = random(256);                         //рандом цвета заполнения центр ленты
-        randomSeed( micros());  random_saturation = random(170 , 256);              //рандом насыщенности заполнения центр ленты
-        randomSeed( millis());  led_pattern_number = random(quantity_led_pattern);  //рандомный выбор режима подсветки
+        randomSeed( millis());  random_color = random(256);             //рандом цвета заполнения центр ленты
+        randomSeed( micros());  random_saturation = random(170 , 256);  //рандом насыщенности заполнения центр ленты
+        randomSeed( millis());  led_pattern_number = 0;                 //выбор режима подсветки
         last_script_house = MOVE;
         fun.cleaner(off);
       }

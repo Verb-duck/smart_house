@@ -75,18 +75,24 @@ void paint_light (const int &color, const int &saturation, const int &hue, uint8
 }
 
 void normal_light() {
+  static bool flagNorm = false;
+  static bool flagColor = false;
+  static bool flagSaturation = false;
+  if(!flagNorm)   
   {PERIOD (100) {
     if ( random_color != light_color_now || random_saturation != light_saturation_now) {
       if ( random_color != light_color_now)random_color ++;
+      else flagColor = true;
       if ( random_saturation < light_saturation_now) random_saturation++;
       else if ( random_saturation > light_saturation_now) random_saturation--;
+      else flagSaturation = true;
       for( int i = 0; i < LED_NUM_CENTR; i++) 
       leds_centr[i] = CHSV(random_color, random_saturation, 255); 
+      if(flagColor && flagSaturation) flagNorm = true;
     }
-  }}
-   
-    led_pattern[ led_pattern_number]();
-    FastLED.delay(sped_led_show);
+  }}   
+    //led_pattern[ led_pattern_number]();
+    //FastLED.delay(sped_led_show);
   }
 
 void blackout_light() {
@@ -152,7 +158,7 @@ void off_light() {
 }
 
 // --------разные режимы подсветки-------------
-
+void Color() {}
 
 void Cylon() {  
     fadeToBlackBy( leds, LED_NUM, 20);
