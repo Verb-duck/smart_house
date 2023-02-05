@@ -9,7 +9,7 @@ void ESP_parsing() {
       switch(command)
       {
       case('a'):      
-        if(ESP_serial.buf[3] == 'a') temperature_day = ESP_parser.getInt(1);
+        if(ESP_serial.buf[3] == 'a') temperature_day = ESP_parser.getInt(2);
         if(ESP_serial.buf[3] == 'b') temperature_night = ESP_parser.getInt(1);
         if(ESP_serial.buf[3] == 'c') temperature_day_off  = ESP_parser.getInt(1);
         if(ESP_serial.buf[3] == 'd') temperature_sunrise = ESP_parser.getInt(1);

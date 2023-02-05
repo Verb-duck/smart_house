@@ -92,6 +92,7 @@ void loop() {
 //функции-обработчика сообщений телеграмм бота 
   void newMsg(FB_msg& msg){
     if (msg.OTA) bot.update();
+    
     if(msg.text[0] == '/' || flagExpectMessage)       //если пришла управляющая команда
     {
       charBuff[0] = '/'; charBuff[2] = '\0';    //начинаем сообщение
@@ -107,9 +108,11 @@ void loop() {
         {
           writeCharInBuff('a');
           writeCharInBuff('a');
+          writeIntInBuff(21);
         }
     }
-   Serial.write(msg.text.c_str(), msg.text.length()); //отправляем 
+    //отправляем 
+    Serial.write(charBuff, strlen(charBuff)); 
     if(flagExpectMessage && millis() - timeRestartExpect > 2000) 
     {
       flagExpectMessage = false;
@@ -136,9 +139,11 @@ void loop() {
 //добавление символа в буффер на отправку
   void writeCharInBuff(char value){
     int index = 0;
-    while(charBuff[index++] != "\0")  //ищем конец буфера
+    while(charBuff[index++] != '\0')  //ищем конец буфера
     charBuff[index++] = value;
+    charBuff[index++] = ';';
     charBuff[index] = '\0';
+
   }
 //функция добавления числа в собщение на отправку
   void writeIntInBuff ( int value){
