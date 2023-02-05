@@ -1,4 +1,4 @@
-#include <EEPROM.h>
+
 
 //-------- iremote-----------
  #include "IRLremote.h"

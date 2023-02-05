@@ -7,8 +7,8 @@ enum MODE_MENU {
 enum SCRIPT_HOUSE { 
   FIRST_SCRIP, MOVE,  SLEEP, VIEWING_FILM, OUTSIDE_THE_HOME, NIGHT_MOVE , NO_MOVE, SUNRISE, LAST_SCRIP,
 } ;
-SCRIPT_HOUSE script_house (NO_MOVE);
-SCRIPT_HOUSE last_script_house(LAST_SCRIP);
+auto script_house = create(NO_MOVE, ENUM);
+auto last_script_house = create(LAST_SCRIP , ENUM);
 
 enum MODE_LIGHT_BEDROM {
   OFF_LIGHT,  START_LIGHT,  NORMAL_LIGHT,  BLACKOUT_LIGHT,

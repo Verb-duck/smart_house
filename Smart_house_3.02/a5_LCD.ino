@@ -73,13 +73,13 @@ void lcd_imagin () {
     temperature_show ( FULL_STRING );
     LCD.setCursor(0, 1);
     LCD.print("Temp day: ");
-    LCD.print(temperature_day);
+    LCD.print((float)temperature_day.value/10);
     LCD.setCursor(0, 2);
     LCD.print("Temp now: ");
     LCD.print(temperature_now);
     LCD.setCursor(0, 3);
     LCD.print("Temp night: ");
-    LCD.print(temperature_night);
+    LCD.print((float)temperature_night.value/10);
     break;
 
     case (LED_PATTERN) : 
@@ -107,7 +107,7 @@ void script_house_show () {
  // if ( script_house != last_script_house) {
  // LCD.clear();
   LCD.print("Script: ");
-  switch (script_house) {
+  switch (script_house.value) {
     case(MOVE) :
     LCD.print( "MOVE " );
     break;

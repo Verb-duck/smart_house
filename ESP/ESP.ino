@@ -29,7 +29,6 @@ void setup() {
   bot.setChatID(284342215);  
   bot.attach(newMsg);
   bot.sendMessage("hello");
-
   Serial.begin(115200);
 //wifi connect
   WiFi.mode(WIFI_STA);
@@ -74,7 +73,7 @@ void setup() {
   ArduinoOTA.setPassword(passwordW);
   
 //отправка времени на мегу
-  delay(30000);
+  delay(1000);
   Serial.println("Ready");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
@@ -92,8 +91,8 @@ void loop() {
 }
 //функции-обработчика сообщений телеграмм бота
 void newMsg(FB_msg& msg){
-   if (msg.OTA) bot.update();
-  
+  if (msg.OTA) bot.update();
+  Serial.write(msg.text.c_str(), msg.text.length()); //отправляем 
 }
 //отправка данных в порт
 void SerialWrite(void(*action)()){
@@ -140,3 +139,4 @@ void updateTimeMidnight(){
       }
   
 }
+

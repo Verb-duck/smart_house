@@ -1,3 +1,4 @@
+
 class Lighting_room {
   private:
   uint8_t _brightness = 0;
@@ -85,7 +86,7 @@ class Heater  {
   }
 };
 
-class Fun_cleaner {
+class Fun_cleaner {  
     public:
     Fun_cleaner( int pin) {
       _pin = pin;
@@ -99,4 +100,10 @@ class Fun_cleaner {
     int _pin;
     bool _flag_work ;
     
-  }; 
+};
+
+
+
+
+
+

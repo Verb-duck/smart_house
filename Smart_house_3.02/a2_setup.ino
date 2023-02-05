@@ -34,33 +34,31 @@ void setup() {
   #elif ( TIME_SETUP == 2)
     now.second = setTime_second; now.minute = setTime_minute; now.hour = setTime_hour;
     rtc.setTime(now);  
-  #endif  
-  
-  float temperature_day = 22;               //температура дня
-  float temperature_night = 19;             //температура ночи
-  float temperature_day_off = 20;             //температура простоя
-  float temperature_sunrise = 20;             //температура для подъёма
-  float temperature_our_house = 16;           //температура если уехал  
+  #endif   
+ 
+
 //-------чтение/запиись настроек в еепром
   if(key_EEPROM != EEPROM.read(0)){     //запись в еепром
     EEPROM.put(0, key_EEPROM) ;
-    EEPROM.put(2, temperature_day) ;
-    EEPROM.put(6, temperature_night);
-    EEPROM.put(10, temperature_day_off);
-    EEPROM.put(14, temperature_sunrise);
-    EEPROM.put(18, temperature_our_house);       
-    EEPROM.put(22, script_house);    // 2bit
-    EEPROM.put(24, last_script_house);
+    writeEEPROM(temperature_day) ; PRINT("temperature_day" , temperature_day.addr);
+    writeEEPROM(temperature_night);  PRINT("temperature_night" , temperature_night.addr);
+    writeEEPROM(temperature_day_off);  PRINT("temperature_day_off" , temperature_day_off.addr);
+    writeEEPROM(temperature_sunrise);
+    writeEEPROM(temperature_our_house);       
+    writeEEPROM(script_house);          PRINT("script_house" , script_house.addr);
+    writeEEPROM(last_script_house);   PRINT("last_script_house" , last_script_house.addr);
+    writeEEPROM(work_alarm_clock);      
     PRINT("update EEPROM settings", " " );
   }
   else {
-    EEPROM.get(2, temperature_day) ;
-    EEPROM.get(6, temperature_night);
-    EEPROM.get(10, temperature_day_off);
-    EEPROM.get(14, temperature_sunrise);
-    EEPROM.get(18, temperature_our_house);       
+    EEPROM.get(2, temperature_day.value) ;
+    EEPROM.get(6, temperature_night.value);
+    EEPROM.get(10, temperature_day_off.value);
+    EEPROM.get(14, temperature_sunrise.value);
+    EEPROM.get(18, temperature_our_house.value);       
     EEPROM.get(22, script_house);
     EEPROM.get(24, last_script_house);
+    EEPROM.get(26, work_alarm_clock);
     PRINT("read EEPROM settings", " " );
   }
   

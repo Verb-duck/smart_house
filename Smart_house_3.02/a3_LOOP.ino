@@ -1,7 +1,7 @@
 
 
 void loop() {
- timeNow= rtc.getTime();               //запись времени в структуру
+ timeNow = rtc.getTime();               //запись времени в структуру
  accomplishment_script_house ();      //режимы работы  
  lcd_imagin ();                        //вывод на экран
  control_joustick();  
