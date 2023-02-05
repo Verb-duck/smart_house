@@ -52,8 +52,8 @@ class Heater  {
     pinMode(_pin_heater, OUTPUT);
     digitalWrite (_pin_heater, LOW);
   }
-  void set_temperature(float temperature) {
-    temperature_set = temperature;
+  void set_temperature(int temperature) {
+    temperature_set = (float)temperature * 0.1;
     flag_retenion_temp = false; 
   }
   void work(float temperature) {

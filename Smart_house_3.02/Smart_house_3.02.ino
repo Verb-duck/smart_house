@@ -11,7 +11,7 @@
 #define setTime_second 1
 #define setTime_minute 2
 #define setTime_hour 3
-#define key_EEPROM 2  // запись/сброс настроек в EEPROM при прошивке, сменить число
+#define key_EEPROM 1  // запись/сброс настроек в EEPROM при прошивке, сменить число
 
 //---------пины--------
 #define ZERO_CROSS 1        //детектор ноля в 220в,  не используется
@@ -45,6 +45,24 @@
 	  Type value;
 	  int addr;
 	  pair(Type f = Type(), int s = 254) : value(f), addr(s) {}	
+    void operator =(Type value) 
+    {
+      this->value = value; 
+      writeEEPROM( *this);
+      Serial.print( this->value) ; Serial.print( "\t") ; Serial.println(addr) ;  
+    }
+    void operator +=(Type value) 
+    {
+      this->value += value; 
+      writeEEPROM( *this);
+      Serial.print( this->value) ; Serial.print( "\t") ; Serial.println(addr) ;  
+    }
+    void operator -=(Type value) 
+    {
+      this->value -= value; 
+      writeEEPROM( *this);
+      Serial.print( this->value) ; Serial.print( "\t") ; Serial.println(addr) ;  
+    }
     
   };
   enum typeValue {
@@ -55,7 +73,7 @@
   };
   //построение пары, присвоение адреса в EEPROM
   	int next_addr = 2;       //0 занят для key_EEPROM
-   template <class Type>
+    template <class Type>
     pair<Type> create (const Type value, typeValue type) {
   	int count_addr = next_addr;
   	next_addr += (int)type;
@@ -76,7 +94,7 @@
  
 //---------переменные--------
 //----temperature
-auto temperature_day = create(220,INT);             //температура дня, *10 -> уйти от float
+auto temperature_day  = create(200,INT);             //температура дня, *10 -> уйти от float
 auto temperature_night = create (190,INT);           //температура ночи
 auto temperature_day_off = create(200,INT);         //температура простоя
 auto temperature_sunrise = create(200,INT);         //температура для подъёма
@@ -89,7 +107,7 @@ uint8_t light_color_now = 30;
 uint8_t light_saturation_now = 180;
 uint8_t Brightness;
 //----clock----
-auto work_alarm_clock = create(false,BOOL);  // вкл/выкл будильник
+auto work_alarm_clock(create(false,BOOL));  // вкл/выкл будильник
 //-----menu------
 static uint32_t time_remove_mainLcd;  //переменная времени для возврата на главный экран
 static uint32_t time_backlight_lcd;   //переменная выключения подсветки экрана

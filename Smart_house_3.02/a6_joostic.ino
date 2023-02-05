@@ -45,24 +45,24 @@ void control_joustick(){
 
   case (MODE_SCRIPT_HOUSE) :
   if (joystick.click_up()) {
-    script_house.value = SCRIPT_HOUSE(script_house.value + 1);
+    script_house = script_house.value +1;
     if ( script_house.value == LAST_SCRIP) {
-      script_house.value = SCRIPT_HOUSE(script_house.value - 1);
+      script_house = FIRST_SCRIP + 1;
       break;
     }
   }
   if (joystick.click_down()) {
-    script_house.value = SCRIPT_HOUSE(script_house.value - 1);
+    script_house = script_house.value - 1;
     if ( script_house.value == FIRST_SCRIP) {
-      script_house.value = SCRIPT_HOUSE(script_house.value + 1);
+      script_house = LAST_SCRIP - 1;
       break;
     }
   }
   break;
 
   case(TEMPERATURE) :
-  if (joystick.click_up()) temperature_day.value += 1; 
-  if (joystick.click_down()) temperature_day.value -= 1;
+  if (joystick.click_up()) temperature_day += 1; 
+  if (joystick.click_down()) temperature_day -= 1;
   
   case (BRIGHTNESS) :
   if(joystick.click_up() && Brightness < 254 )

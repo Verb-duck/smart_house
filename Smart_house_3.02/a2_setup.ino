@@ -46,7 +46,6 @@ void setup() {
     writeEEPROM(temperature_sunrise);
     writeEEPROM(temperature_our_house);       
     writeEEPROM(script_house);         
-    writeEEPROM(last_script_house);   
     writeEEPROM(work_alarm_clock);      
     PRINT("update EEPROM settings", " " );
   }
@@ -57,7 +56,6 @@ void setup() {
     readEEPROM(temperature_sunrise);
     readEEPROM(temperature_our_house);       
     readEEPROM(script_house);         
-    readEEPROM(last_script_house);   
     readEEPROM(work_alarm_clock);      
     PRINT("read EEPROM settings", " " );
   }
