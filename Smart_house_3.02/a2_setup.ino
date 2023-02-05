@@ -39,10 +39,9 @@ void setup() {
 
 //-------чтение/запиись настроек в еепром
 
-std::cout << "temperature_day " << temperature_day.value << " \t adddr " << temperature_day.addr << std::endl; 
-std::cout << "temperature_night " << temperature_night.value << " \t adddr " << temperature_night.addr << std::endl; 
-std::cout << "temperature_day_off " << temperature_day_off.value << " \t adddr " << temperature_day_off.addr << std::endl; 
-std::cout << "last_script_house " << last_script_house.value << " \t adddr " << last_script_house.addr << std::endl; 
+Serial.print("temperature_day "); Serial.print(temperature_day.value); Serial.print(" \t adddr "); Serial.println(temperature_day.addr); 
+Serial.print("temperature_night "); Serial.print(temperature_night.value); Serial.print(" \t adddr "); Serial.println(temperature_night.addr); 
+Serial.print("last_script_house "); Serial.print(last_script_house.value); Serial.print(" \t adddr "); Serial.println(last_script_house.addr); 
 
   if(key_EEPROM != EEPROM.read(0)){     //запись в еепром
     EEPROM.put(0, key_EEPROM) ;
