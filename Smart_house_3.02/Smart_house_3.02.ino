@@ -11,7 +11,7 @@
 #define setTime_second 1
 #define setTime_minute 2
 #define setTime_hour 3
-#define key_EEPROM 0  // запись/сброс настроек в EEPROM при прошивке, сменить число
+#define key_EEPROM 2  // запись/сброс настроек в EEPROM при прошивке, сменить число
 
 //---------пины--------
 #define ZERO_CROSS 1        //детектор ноля в 220в,  не используется
@@ -21,15 +21,15 @@
 #define DC18B20_PIN 24      //пин для термометров
 #define LED_PIN 27          //лента контур
 #define LED_PIN_CENTR 28    //лента центр
-                            //  #define MLED_PIN 34         // пин светодиода режимов цветомузыки. событий.
+//#define MLED_PIN 34         // пин светодиода режимов цветомузыки. событий.
 #define PIR_SENSOR 47       //датчик движения ик
 #define STIK_KEY_PIN 42     //btn joostic
 #define MIC_SENSOR 15       //датчик звука
 #define FREE_RELE_PIN 35    //low signal
 #define CLEANER_FUN_PIN 36  //low signal
-                            //pwm pin
+//pwm pin
 #define LCD_BRIGHTNESS 4    //яркость экрана, шим.
-                            //analog pin
+//analog pin
 #define DHT_PIN A0          //датчик dht11
 #define SOUND_R A2          //аналоговый пин вход аудио, правый канал
 #define SOUND_L A3          //аналоговый пин вход аудио, левый канал
@@ -45,6 +45,7 @@
 	  Type value;
 	  int addr;
 	  pair(Type f = Type(), int s = 254) : value(f), addr(s) {}	
+    
   };
   enum typeValue {
   	BOOL = 1,  //1 byte 
@@ -53,9 +54,9 @@
   	FLOAT = 4, // 4 byte 
   };
   //построение пары, присвоение адреса в EEPROM
-  template <class Type>
-    const pair<Type>& create (const Type value, typeValue type) {
-  	static int next_addr = 2;       //0 занят для key_EEPROM
+  	int next_addr = 2;       //0 занят для key_EEPROM
+   template <class Type>
+    pair<Type> create (const Type value, typeValue type) {
   	int count_addr = next_addr;
   	next_addr += (int)type;
   	return pair<Type> (value, count_addr);	

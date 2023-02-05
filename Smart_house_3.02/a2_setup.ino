@@ -21,13 +21,13 @@ void setup() {
   LCD.backlight();       // включение подсветки дисплея
   LCD.setCursor(0,0);
   LCD.print( "version "); LCD.print( ver); LCD.print(LCDdebug);
-//------ик приёмник------
+//---------ик приёмник------
   IRLremote.begin(IR_PIN);
 //---------dht11----------
   dht.begin();
 //---------btn------
   joystick.debounce(400);        // настройка антидребезга (по умолчанию 80 мс) 
-//------модуль времени------
+//---------модуль времени------
   sunriseStartSet();  
   #if ( TIME_SETUP == 1)   //запись времени в rtc модуль
     rtc.setTime(BUILD_SEC, BUILD_MIN, BUILD_HOUR, BUILD_DAY, BUILD_MONTH, BUILD_YEAR);
@@ -37,12 +37,7 @@ void setup() {
   #endif   
  
 
-//-------чтение/запиись настроек в еепром
-
-Serial.print("temperature_day "); Serial.print(temperature_day.value); Serial.print(" \t adddr "); Serial.println(temperature_day.addr); 
-Serial.print("temperature_night "); Serial.print(temperature_night.value); Serial.print(" \t adddr "); Serial.println(temperature_night.addr); 
-Serial.print("last_script_house "); Serial.print(last_script_house.value); Serial.print(" \t adddr "); Serial.println(last_script_house.addr); 
-
+//---------чтение/запиись настроек в еепром
   if(key_EEPROM != EEPROM.read(0)){     //запись в еепром
     EEPROM.put(0, key_EEPROM) ;
     writeEEPROM(temperature_day) ; 
@@ -56,18 +51,17 @@ Serial.print("last_script_house "); Serial.print(last_script_house.value); Seria
     PRINT("update EEPROM settings", " " );
   }
   else {
-    EEPROM.get(2, temperature_day.value) ;
-    EEPROM.get(6, temperature_night.value);
-    EEPROM.get(10, temperature_day_off.value);
-    EEPROM.get(14, temperature_sunrise.value);
-    EEPROM.get(18, temperature_our_house.value);       
-    EEPROM.get(22, script_house);
-    EEPROM.get(24, last_script_house);
-    EEPROM.get(26, work_alarm_clock);
+    readEEPROM(temperature_day) ; 
+    readEEPROM(temperature_night);  
+    readEEPROM(temperature_day_off);  
+    readEEPROM(temperature_sunrise);
+    readEEPROM(temperature_our_house);       
+    readEEPROM(script_house);         
+    readEEPROM(last_script_house);   
+    readEEPROM(work_alarm_clock);      
     PRINT("read EEPROM settings", " " );
   }
-  
-  
+//  
   delay(2000);
   LCD.clear();
 }

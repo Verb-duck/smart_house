@@ -27,6 +27,7 @@ void accomplishment_script_house () {
       }
       if ( millis() - timer_waiting >= TIME_OFF_NO_MOVE * 60000) {  //выключение при простое
         script_house.value = NO_MOVE;
+        writeEEPROM(script_house);   
       }
      
       break;
@@ -42,6 +43,7 @@ void accomplishment_script_house () {
       if ( pir_sensor ()){
         timer_waiting = millis();
         script_house.value = MOVE;
+        writeEEPROM(script_house);   
       }
       
       
