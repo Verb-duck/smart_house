@@ -11,7 +11,7 @@
 #define setTime_second 1
 #define setTime_minute 2
 #define setTime_hour 3
-#define key_EEPROM 2  // запись/сброс настроек в EEPROM при прошивке, сменить число
+#define key_EEPROM 1  // запись/сброс настроек в EEPROM при прошивке, сменить число
 
 //---------пины--------
 #define ZERO_CROSS 1        //детектор ноля в 220в,  не используется
@@ -94,11 +94,11 @@
  
 //---------переменные--------
 //----temperature
-auto temperature_day  = create(200,INT);             //температура дня, *10 -> уйти от float
+auto temperature_day  = create(210,INT);             //температура дня, *10 -> уйти от float
 auto temperature_night = create (190,INT);           //температура ночи
 auto temperature_day_off = create(200,INT);         //температура простоя
 auto temperature_sunrise = create(200,INT);         //температура для подъёма
-auto temperature_our_house = create(30,INT);       //температура если уехал
+auto temperature_our_house = create(20,INT);       //температура если уехал
 float temperature_now;                             //температура измерения
 //----lighting----
 uint8_t random_color;

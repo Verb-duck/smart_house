@@ -74,7 +74,7 @@ void setup() {
   ArduinoOTA.setPassword(passwordW);
   
 //отправка времени на мегу
-  delay(10000);
+  delay(2000);
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
   timeClient.begin();  
@@ -112,23 +112,23 @@ void loop() {
         }
         if(msg.text.lastIndexOf("/normal") != -1)
         { 
-          strcat(charBuff, "/,с,a"); 
+          strcat(charBuff, "/,c,a"); 
         }
         if(msg.text.lastIndexOf("/sleep") != -1)
         { 
-          strcat(charBuff, "/,с,b"); 
+          strcat(charBuff, "/,c,b"); 
         }
         if(msg.text.lastIndexOf("/leave_home") != -1)
         { 
-          strcat(charBuff, "/,с,c"); 
+          strcat(charBuff, "/,c,c"); 
         }
         if(msg.text.lastIndexOf("/vieving_film") != -1)
         { 
-          strcat(charBuff, "/,с,d"); 
+          strcat(charBuff, "/,c,d"); 
         }
         if(msg.text.lastIndexOf("/return_home") != -1)
         { 
-          strcat(charBuff, "/,с,f"); 
+          strcat(charBuff, "/,c,f"); 
         }
     }
 

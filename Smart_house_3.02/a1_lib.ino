@@ -43,8 +43,8 @@
   #include <microDS3231.h>
   MicroDS3231 rtc;                        // SDA A4 SCL A5  
   DateTime timeNow;
-  auto alarmClockH(create(9, INT));
-  auto alarmClockM(create(10, INT));
+  auto alarmClockH(create(10, INT));
+  auto alarmClockM(create(50, INT));
   DateTime sunriseStartTime;
   bool operator == (DateTime & t1 , DateTime &t2) {
     if (t1.minute == t2.minute && t1.hour == t2.hour) return true;
