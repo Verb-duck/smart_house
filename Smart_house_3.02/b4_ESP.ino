@@ -7,8 +7,6 @@ void ESP_parsing() {
     ESP_parser.split();           //разделяeт строку на подстроки, заменяя разделители на NULL
     if (ESP_serial.buf[0] == '/') 
     { 
-      PRINT( " command1 ",command1);
-      PRINT( " command2 ",command2);
       switch(command1)
       {
       case('a'):          //temperature
@@ -29,6 +27,12 @@ void ESP_parsing() {
           case('e'):
             temperature_our_house = ESP_parser.getFloat(3) * 10;
             break;
+          case('f'):
+            temperature_day += 5;
+            break;
+          case('g'):
+            temperature_day -= 5;
+            break;  
           default:
             break;
         }        

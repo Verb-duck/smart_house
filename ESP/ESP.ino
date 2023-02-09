@@ -16,9 +16,10 @@ NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 
 #include <FastBot.h>
 FastBot bot("6130227271:AAHMnTK8NFMRnXyOqVDUXeMPnWHVo__k3nI"); 
-bool flagExpectMessage = false;
+bool flagExpectMessage = false;     //expect message service
+//bool SendMessage = false;           //expect send message
 int timeRestartExpect;
-char charBuff[40] {""};     //буффер для приёма/правки по serial
+char outBuff[40];             //buff save and send message
 
 //-------serial-----
   #include <AsyncStream.h>
@@ -93,52 +94,91 @@ void loop() {
 //функции-обработчика сообщений телеграмм бота 
   void newMsg(FB_msg& msg){
     if (msg.OTA) bot.update();
-    if(msg.text[0] == '/' || flagExpectMessage)       //если пришла управляющая команда
+  //если ждём данных дополнительных данных из чата, записываем в буфер
+    if (flagExpectMessage)    
     {
-      charBuff[0] = '\0';     //обнуляем буффер
-      writeCharInBuff('/');
-      //открываем возможность для приёма сообщений без '/'
-        if(!flagExpectMessage)
+      strcat(outBuff, ","); 
+      strcat(outBuff,msg.text.c_str());      //дописываем в буффер данные
+      flagExpectMessage = false;
+    }
+  //записываем в буффер сообщение
+    if(msg.text[0] == '/')      
+    {      
+      outBuff[0] = '\0';                     //обнуляем буффер
+    //ищем совпадения и записываем в буфер команду
+      //------temperature--------
+        if(msg.text.lastIndexOf("/temperature_day") != -1)
         {
-          flagExpectMessage = true;       
-          timeRestartExpect = millis();   //счётчик ожижания сообщения без '/'
+          strcat(outBuff, "/,a,a");
+          startExpectMessage();
         }
-
-      //ищем совпадения
-        if(msg.text.lastIndexOf("/tempDay") != -1)
+        if(msg.text.lastIndexOf("/temperature_night") != -1)
         {
-          strcat(charBuff, "/,a,a,");
-          writeIntInBuff(21);
+          strcat(outBuff, "/,a,b");
+          startExpectMessage();
         }
+        if(msg.text.lastIndexOf("/temperature_day_off") != -1)
+        {
+          strcat(outBuff, "/,a,c");
+          startExpectMessage();
+        }
+        if(msg.text.lastIndexOf("/temperature_sunrise") != -1)
+        {
+          strcat(outBuff, "/,a,d");
+          startExpectMessage();
+        }
+        if(msg.text.lastIndexOf("/temperature_our_house") != -1)
+        {
+          strcat(outBuff, "/,a,e");
+          startExpectMessage();
+        }
+        if(msg.text.lastIndexOf("/temperature_raise") != -1)
+        {
+          strcat(outBuff, "/,a,f");
+        }
+        if(msg.text.lastIndexOf("/temperature_reduce") != -1)
+        {
+          strcat(outBuff, "/,a,g");
+        }
+      //------mode house---------
         if(msg.text.lastIndexOf("/normal") != -1)
         { 
-          strcat(charBuff, "/,c,a"); 
+          strcat(outBuff, "/,c,a"); 
         }
         if(msg.text.lastIndexOf("/sleep") != -1)
         { 
-          strcat(charBuff, "/,c,b"); 
+          strcat(outBuff, "/,c,b"); 
         }
         if(msg.text.lastIndexOf("/leave_home") != -1)
         { 
-          strcat(charBuff, "/,c,c"); 
+          strcat(outBuff, "/,c,c"); 
         }
         if(msg.text.lastIndexOf("/vieving_film") != -1)
         { 
-          strcat(charBuff, "/,c,d"); 
+          strcat(outBuff, "/,c,d"); 
         }
         if(msg.text.lastIndexOf("/return_home") != -1)
         { 
-          strcat(charBuff, "/,c,f"); 
+          strcat(outBuff, "/,c,f"); 
+        }
+      //------time---------------
+        if(msg.text.lastIndexOf("/time_alarm") != -1)
+        { 
+          strcat(outBuff, "/,b,b"); 
+          startExpectMessage();
         }
     }
-
-    //отправка данных в порт
-    strcat(charBuff, ";");         //добавляем термиатор
-    Serial.write(charBuff, strlen(charBuff)); //отправляем 
-
-    if(flagExpectMessage && millis() - timeRestartExpect > 2000) 
+  //отправка данных в порт . добавить проверку целостности получения  сообщения
+    if(!flagExpectMessage) 
     {
-      flagExpectMessage = false;
+      strcat(outBuff, ";");                        //добавляем термиатор
+      Serial.write(outBuff, strlen(outBuff));     //send messege 
+    }
+  //если на дождались, закрываем возможность для приёма сообщений без '/'    
+    if(flagExpectMessage && millis() - timeRestartExpect > 5000)    
+    {
+      flagExpectMessage = false;       
+      outBuff[0] = '\0';                //обнуляем буффер чтобы не отправлять неполное сообщение
     } 
   }
 
@@ -147,8 +187,8 @@ void loop() {
 //отправка данных в порт
   void SerialWrite(void(*action)()){
     action();                      //выбрать какие данные
-    strcat(charBuff, ";");         //добавляем термиатор
-    Serial.write(charBuff, strlen(charBuff)); //отправляем  
+    strcat(outBuff, ";");         //добавляем термиатор
+    Serial.write(outBuff, strlen(outBuff)); //отправляем  
   }
 //чтение данных из Serial
   void SerialRead() {
@@ -159,38 +199,28 @@ void loop() {
       SerialWrite(updateTime);       
     }  
   } 
-//добавление символа в буффер на отправку
-  void writeCharInBuff(char value){
-    int index = 0;
-    while(charBuff[index++] != '\0')  //ищем конец буфера
-      {++index;}
-    charBuff[index++] = value;
-    charBuff[index++] = ',';
-    charBuff[index] = '\0';
-
-  }
 //функция добавления числа в собщение на отправку
   void writeIntInBuff ( int value){
-    strcat(charBuff, ",");  //дописываем разделитель в буфер
+    strcat(outBuff, ",");  //дописываем разделитель в буфер
     char temp[4];
     itoa(value,temp, DEC);  //преобразовываем число в char
-    strcat(charBuff ,temp); //дописываем число в буфер
+    strcat(outBuff ,temp); //дописываем число в буфер
   }
   void writeIntFloatBuff ( float value){
-    strcat(charBuff, ",");  //дописываем разделитель в буфер
+    strcat(outBuff, ",");  //дописываем разделитель в буфер
     char temp[4];
     //dtostrf(value,temp, DEC);  //преобразовываем число в char
-    strcat(charBuff ,temp); //дописываем число в буфер
+    strcat(outBuff ,temp); //дописываем число в буфер
   }
 //запись времени в буфер
     void updateTime(){
-    charBuff[0] = '\0';
-    strcat(charBuff, "/,b,a"); 
+    outBuff[0] = '\0';
+    strcat(outBuff, "/,b,a"); 
     writeIntInBuff(timeClient.getHours());
     writeIntInBuff(timeClient.getMinutes());
     writeIntInBuff(timeClient.getSeconds());
-    strcat(charBuff, ";");         //добавляем термиатор
-    Serial.write(charBuff, strlen(charBuff)); //отправляем   
+    strcat(outBuff, ";");         //добавляем термиатор
+    Serial.write(outBuff, strlen(outBuff)); //отправляем   
   }
 //синхронизация времени с мегой в полночь
   void updateTimeMidnight(){
@@ -201,4 +231,9 @@ void loop() {
         updateTime();
         delay(1000);
       }  
+  }
+//открываем возможность для приёма сообщений из ча бота без '/'     
+  void startExpectMessage() {
+    flagExpectMessage = true;            //откладываем отправление, ждём данных
+    timeRestartExpect = millis();        //запускаем счётчик ожидания сообщения без '/'
   }
