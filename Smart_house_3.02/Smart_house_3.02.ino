@@ -49,19 +49,16 @@
     {
       this->value = value; 
       writeEEPROM( *this);
-      Serial.print( "new value:\t");Serial.println( this->addr);
     }
     void operator +=(Type value) 
     {
       this->value += value; 
       writeEEPROM( *this);
-      Serial.print( "new value:\t");Serial.println( this->addr);
     }
     void operator -=(Type value) 
     {
       this->value -= value; 
       writeEEPROM( *this);
-      Serial.print( "new value:\t");Serial.println(this-> addr);
     }
     
   };

@@ -55,11 +55,9 @@ void ESP_parsing() {
           work_alarm_clock = false;
         break;
       case('c'):          //script house
-        PRINT( " 1 ","");
         switch(command2)
         {
           case('a'):
-            PRINT( " 2 ","");
             script_house = MOVE;
             break;
           case('b'):

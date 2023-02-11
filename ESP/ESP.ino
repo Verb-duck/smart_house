@@ -17,15 +17,15 @@ NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 #include <FastBot.h>
 FastBot bot("6130227271:AAHMnTK8NFMRnXyOqVDUXeMPnWHVo__k3nI"); 
 bool flagExpectMessage = false;     //expect message service
-//bool SendMessage = false;           //expect send message
 int timeRestartExpect;
 char outBuff[40];             //buff save and send message
+byte
 
 //-------serial-----
   #include <AsyncStream.h>
-  AsyncStream<40> serial(&Serial,';'); 
+  AsyncStream<40> Mega_serial(&Serial,';'); 
   #include <GParser.h>
-  GParser parser(serial.buf, ',');
+  GParser Mega_parser(serial.buf, ',');
 
 
 void setup() { 
@@ -144,6 +144,7 @@ void loop() {
         if(msg.text.lastIndexOf("/normal") != -1)
         { 
           strcat(outBuff, "/,c,a"); 
+          bot.sendMessage("hello");
         }
         if(msg.text.lastIndexOf("/sleep") != -1)
         { 
@@ -185,19 +186,16 @@ void loop() {
 //bot.sendMessage("hello");
 
 //отправка данных в порт
-  void SerialWrite(void(*action)()){
-    action();                      //выбрать какие данные
-    strcat(outBuff, ";");         //добавляем термиатор
-    Serial.write(outBuff, strlen(outBuff)); //отправляем  
-  }
+  // void SerialWrite(void(*action)()){
+  //   action();                      //выбрать какие данные
+  //   strcat(outBuff, ";");         //добавляем термиатор
+  //   Serial.write(outBuff, strlen(outBuff)); //отправляем  
+  // }
 //чтение данных из Serial
   void SerialRead() {
-   if (serial.available()) 
+   if (Mega_serial.available()) 
    {
-    parser.split();   
-    if(serial.buf[0] == 't')
-      SerialWrite(updateTime);       
-    }  
+    Mega_parser.split();      
   } 
 //функция добавления числа в собщение на отправку
   void writeIntInBuff ( int value){
