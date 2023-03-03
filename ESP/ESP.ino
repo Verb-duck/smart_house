@@ -18,14 +18,15 @@ NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 FastBot bot("6130227271:AAHMnTK8NFMRnXyOqVDUXeMPnWHVo__k3nI"); 
 bool flagExpectMessage = false;     //expect message service
 int timeRestartExpect;
-char outBuff[40];             //buff save and send message
-byte
+char outBuff[20];             //buff save and send message
+bool repeatOutMessage = false;
+byte lengthOutMessage = 0;
 
 //-------serial-----
-  #include <AsyncStream.h>
-  AsyncStream<40> Mega_serial(&Serial,';'); 
-  #include <GParser.h>
-  GParser Mega_parser(serial.buf, ',');
+  #include "AsyncStream.h"
+  AsyncStream<40> Mega_serial(&Serial,';',100); 
+  #include "GParser.h"
+  GParser Mega_parser(Mega_serial.buf, '^');
 
 
 void setup() { 
@@ -36,7 +37,7 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, passwordW);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    Serial.println("Connection Failed! Rebooting...");
+    //Serial.println("Connection Failed! Rebooting...");
     delay(5000);
     ESP.restart();
   }
@@ -49,28 +50,28 @@ void setup() {
     }
 
     // NOTE: if updating FS this would be the place to unmount FS using FS.end()
-    Serial.println("Start updating " + type);
+    //Serial.println("Start updating " + type);
   });
   ArduinoOTA.onEnd([]() {
-    Serial.println("\nEnd");
+    //Serial.println("\nEnd");
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+    //Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
   });
-  ArduinoOTA.onError([](ota_error_t error) {
-    Serial.printf("Error[%u]: ", error);
-    if (error == OTA_AUTH_ERROR) {
-      Serial.println("Auth Failed");
-    } else if (error == OTA_BEGIN_ERROR) {
-      Serial.println("Begin Failed");
-    } else if (error == OTA_CONNECT_ERROR) {
-      Serial.println("Connect Failed");
-    } else if (error == OTA_RECEIVE_ERROR) {
-      Serial.println("Receive Failed");
-    } else if (error == OTA_END_ERROR) {
-      Serial.println("End Failed");
-    }
-  });
+  // ArduinoOTA.onError([](ota_error_t error) {
+  //   Serial.printf("Error[%u]: ", error);
+  //   if (error == OTA_AUTH_ERROR) {
+  //     Serial.println("Auth Failed");
+  //   } else if (error == OTA_BEGIN_ERROR) {
+  //     Serial.println("Begin Failed");
+  //   } else if (error == OTA_CONNECT_ERROR) {
+  //     Serial.println("Connect Failed");
+  //   } else if (error == OTA_RECEIVE_ERROR) {
+  //     Serial.println("Receive Failed");
+  //   } else if (error == OTA_END_ERROR) {
+  //     Serial.println("End Failed");
+  //   }
+  // });
   ArduinoOTA.begin();
   ArduinoOTA.setPassword(passwordW);
   
@@ -94,10 +95,10 @@ void loop() {
 //функции-обработчика сообщений телеграмм бота 
   void newMsg(FB_msg& msg){
     if (msg.OTA) bot.update();
-  //если ждём данных дополнительных данных из чата, записываем в буфер
+  //если ждём дополнительных данных из чата, записываем в буфер
     if (flagExpectMessage)    
     {
-      strcat(outBuff, ","); 
+      strcat(outBuff, "^"); 
       strcat(outBuff,msg.text.c_str());      //дописываем в буффер данные
       flagExpectMessage = false;
     }
@@ -109,72 +110,70 @@ void loop() {
       //------temperature--------
         if(msg.text.lastIndexOf("/temperature_day") != -1)
         {
-          strcat(outBuff, "/,a,a");
+          strcat(outBuff, "/^a^a");
           startExpectMessage();
         }
         if(msg.text.lastIndexOf("/temperature_night") != -1)
         {
-          strcat(outBuff, "/,a,b");
+          strcat(outBuff, "/^a^b");
           startExpectMessage();
         }
         if(msg.text.lastIndexOf("/temperature_day_off") != -1)
         {
-          strcat(outBuff, "/,a,c");
+          strcat(outBuff, "/^a^c");
           startExpectMessage();
         }
         if(msg.text.lastIndexOf("/temperature_sunrise") != -1)
         {
-          strcat(outBuff, "/,a,d");
+          strcat(outBuff, "/^a^d");
           startExpectMessage();
         }
         if(msg.text.lastIndexOf("/temperature_our_house") != -1)
         {
-          strcat(outBuff, "/,a,e");
+          strcat(outBuff, "/^a^e");
           startExpectMessage();
         }
         if(msg.text.lastIndexOf("/temperature_raise") != -1)
         {
-          strcat(outBuff, "/,a,f");
+          strcat(outBuff, "/^a^f");
         }
         if(msg.text.lastIndexOf("/temperature_reduce") != -1)
         {
-          strcat(outBuff, "/,a,g");
+          strcat(outBuff, "/^a^g");
         }
       //------mode house---------
         if(msg.text.lastIndexOf("/normal") != -1)
         { 
-          strcat(outBuff, "/,c,a"); 
-          bot.sendMessage("hello");
+          strcat(outBuff, "/^c^a"); 
         }
         if(msg.text.lastIndexOf("/sleep") != -1)
         { 
-          strcat(outBuff, "/,c,b"); 
+          strcat(outBuff, "/^c^b"); 
         }
         if(msg.text.lastIndexOf("/leave_home") != -1)
         { 
-          strcat(outBuff, "/,c,c"); 
+          strcat(outBuff, "/^c^c"); 
         }
         if(msg.text.lastIndexOf("/vieving_film") != -1)
         { 
-          strcat(outBuff, "/,c,d"); 
+          strcat(outBuff, "/^c^d"); 
         }
         if(msg.text.lastIndexOf("/return_home") != -1)
         { 
-          strcat(outBuff, "/,c,f"); 
+          strcat(outBuff, "/^c^f"); 
         }
       //------time---------------
         if(msg.text.lastIndexOf("/time_alarm") != -1)
         { 
-          strcat(outBuff, "/,b,b"); 
+          strcat(outBuff, "/^b^b"); 
           startExpectMessage();
         }
     }
-  //отправка данных в порт . добавить проверку целостности получения  сообщения
+  //отправка данных в порт
     if(!flagExpectMessage) 
     {
-      strcat(outBuff, ";");                        //добавляем термиатор
-      Serial.write(outBuff, strlen(outBuff));     //send messege 
-    }
+      sendMessageMega();
+    } 
   //если на дождались, закрываем возможность для приёма сообщений без '/'    
     if(flagExpectMessage && millis() - timeRestartExpect > 5000)    
     {
@@ -182,43 +181,51 @@ void loop() {
       outBuff[0] = '\0';                //обнуляем буффер чтобы не отправлять неполное сообщение
     } 
   }
-
-//bot.sendMessage("hello");
-
-//отправка данных в порт
-  // void SerialWrite(void(*action)()){
-  //   action();                      //выбрать какие данные
-  //   strcat(outBuff, ";");         //добавляем термиатор
-  //   Serial.write(outBuff, strlen(outBuff)); //отправляем  
-  // }
+//отправка сообщения на мегу
+  void sendMessageMega (){
+    lengthOutMessage = strlen(outBuff);
+    outBuff[lengthOutMessage++] = '^';
+    byte crc = crc8_bytes((byte*)&outBuff,lengthOutMessage);
+    outBuff[lengthOutMessage++] = crc;
+    outBuff[lengthOutMessage++] = ';';
+    Serial.write(outBuff, lengthOutMessage);     //send messege 
+      // String mess;
+        // mess += "crc= ";     // mess += crc;
+        // mess += "  length= ";  // mess += lengthOutMessage;
+       // bot.sendMessage (mess);
+  }
 //чтение данных из Serial
   void SerialRead() {
    if (Mega_serial.available()) 
    {
-    Mega_parser.split();      
+    //повтораная отправка
+    if(Mega_serial.buf[0] == '*')
+      {
+        Serial.write(outBuff, lengthOutMessage); 
+      }
+   }   
   } 
 //функция добавления числа в собщение на отправку
-  void writeIntInBuff ( int value){
-    strcat(outBuff, ",");  //дописываем разделитель в буфер
-    char temp[4];
+  void writeIntInBuff ( byte value){
+    strcat(outBuff, "^");  //дописываем разделитель в буфер
+    char temp[2];
     itoa(value,temp, DEC);  //преобразовываем число в char
     strcat(outBuff ,temp); //дописываем число в буфер
   }
   void writeIntFloatBuff ( float value){
-    strcat(outBuff, ",");  //дописываем разделитель в буфер
+    strcat(outBuff, "^");  //дописываем разделитель в буфер
     char temp[4];
     //dtostrf(value,temp, DEC);  //преобразовываем число в char
     strcat(outBuff ,temp); //дописываем число в буфер
   }
 //запись времени в буфер
-    void updateTime(){
+  void updateTime(){
     outBuff[0] = '\0';
-    strcat(outBuff, "/,b,a"); 
+    strcat(outBuff, "/^b^a"); 
     writeIntInBuff(timeClient.getHours());
     writeIntInBuff(timeClient.getMinutes());
     writeIntInBuff(timeClient.getSeconds());
-    strcat(outBuff, ";");         //добавляем термиатор
-    Serial.write(outBuff, strlen(outBuff)); //отправляем   
+    sendMessageMega();
   }
 //синхронизация времени с мегой в полночь
   void updateTimeMidnight(){
@@ -227,11 +234,23 @@ void loop() {
       timeClient.getSeconds() == 0 ) 
       {
         updateTime();
-        delay(1000);
+        delay(1000);   //задержка, что бы не было кучи обновлений времени в течении этой секунды при 00.00.00
       }  
   }
-//открываем возможность для приёма сообщений из ча бота без '/'     
+//открываем возможность для приёма сообщений из чата бота без '/'  
   void startExpectMessage() {
     flagExpectMessage = true;            //откладываем отправление, ждём данных
     timeRestartExpect = millis();        //запускаем счётчик ожидания сообщения без '/'
   }
+// функция для расчёта crc
+ byte crc8_bytes(byte *buffer, byte size) {
+  byte crc = 0;
+  for (byte i = 0; i < size; i++) {
+    byte data = buffer[i];
+    for (int j = 8; j > 0; j--) {
+      crc = ((crc ^ data) & 1) ? (crc >> 1) ^ 0x8C : (crc >> 1);
+      data >>= 1;
+    }
+  }
+  return crc;
+ }

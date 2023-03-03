@@ -1,10 +1,20 @@
 void ESP_parsing() {
   if (ESP_serial.available()) {    // если данные получены
-    //  /,a,a,234,6;   формат принимаемой строки      
-    PRINT("new message ", ESP_serial.buf);
+    //  /^a^a^234^...^crc;   формат принимаемой строки 
+    byte length = strlen(ESP_serial.buf);
+    byte crc_mega = crc8_bytes((byte*)&ESP_serial, length-1);  //расчёт crc входящего сообщения без последнего байта
+    byte crc_esp = (byte)(ESP_serial.buf[length-1]);   
+    PRINT("new message ", ESP_serial.buf);    
+    if(crc_mega != crc_esp) 
+    {
+      outBuff[0] = '*';     
+      Serial3.write(outBuff, 1);
+      return;
+    }  
+    Serial.print( "OK"); 
     char command1 = ESP_serial.buf[2]; 
-    char command2 = ESP_serial.buf[4]; 
-    ESP_parser.split();           //разделяeт строку на подстроки, заменяя разделители на NULL
+    char command2 = ESP_serial.buf[4];
+    byte am = ESP_parser.split();           //разделяeт строку на подстроки, заменяя разделители на NULL
     if (ESP_serial.buf[0] == '/') 
     { 
       switch(command1)
@@ -88,3 +98,15 @@ void ESP_parsing() {
   }  
 }
 
+// функция для расчёта crc
+ byte crc8_bytes(byte *buffer, byte size) {
+  byte crc = 0;
+  for (byte i = 0; i < size; i++) {
+    byte data = buffer[i];
+    for (int j = 8; j > 0; j--) {
+      crc = ((crc ^ data) & 1) ? (crc >> 1) ^ 0x8C : (crc >> 1);
+      data >>= 1;
+    }
+  }
+  return crc;
+ }

@@ -73,6 +73,5 @@
   #include "AsyncStream.h"
   #include "GParser.h"
   AsyncStream<40> ESP_serial(&Serial3,';',100); 
-  GParser ESP_parser (ESP_serial.buf, ',');
-
-
+  GParser ESP_parser (ESP_serial.buf, '^');
+  char outBuff[20];  
