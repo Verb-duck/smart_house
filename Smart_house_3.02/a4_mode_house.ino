@@ -36,7 +36,15 @@ void accomplishment_script_house () {
         timer_waiting = millis();
         script_house = MOVE;
       }
-      
+
+      case( VIEWING_FILM) :
+      if ( last_script_house != VIEWING_FILM ) {            //если первый запуск
+        heater_room_1.set_temperature (&temperature_day.value);
+        heater_room_2.set_temperature (&temperature_day.value);
+        mode_light_bedroom = OFF_LIGHT;
+        last_script_house = VIEWING_FILM;
+        fun.cleaner(off); 
+      }      
       
       break;     
 //**********DAY**********

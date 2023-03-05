@@ -37,7 +37,7 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, passwordW);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    //Serial.println("Connection Failed! Rebooting...");
+    Serial.println("Connection Failed! Rebooting...");
     delay(5000);
     ESP.restart();
   }
@@ -50,28 +50,28 @@ void setup() {
     }
 
     // NOTE: if updating FS this would be the place to unmount FS using FS.end()
-    //Serial.println("Start updating " + type);
+    Serial.println("Start updating " + type);
   });
   ArduinoOTA.onEnd([]() {
-    //Serial.println("\nEnd");
+    Serial.println("\nEnd");
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    //Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
   });
-  // ArduinoOTA.onError([](ota_error_t error) {
-  //   Serial.printf("Error[%u]: ", error);
-  //   if (error == OTA_AUTH_ERROR) {
-  //     Serial.println("Auth Failed");
-  //   } else if (error == OTA_BEGIN_ERROR) {
-  //     Serial.println("Begin Failed");
-  //   } else if (error == OTA_CONNECT_ERROR) {
-  //     Serial.println("Connect Failed");
-  //   } else if (error == OTA_RECEIVE_ERROR) {
-  //     Serial.println("Receive Failed");
-  //   } else if (error == OTA_END_ERROR) {
-  //     Serial.println("End Failed");
-  //   }
-  // });
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) {
+      Serial.println("Auth Failed");
+    } else if (error == OTA_BEGIN_ERROR) {
+      Serial.println("Begin Failed");
+    } else if (error == OTA_CONNECT_ERROR) {
+      Serial.println("Connect Failed");
+    } else if (error == OTA_RECEIVE_ERROR) {
+      Serial.println("Receive Failed");
+    } else if (error == OTA_END_ERROR) {
+      Serial.println("End Failed");
+    }
+  });
   ArduinoOTA.begin();
   ArduinoOTA.setPassword(passwordW);
   
@@ -81,8 +81,14 @@ void setup() {
   Serial.println(WiFi.localIP());
   timeClient.begin();  
   timeClient.update(); 
-  delay(1000); 
-  updateTime();
+  delay(10); 
+ //updateTime mega
+  outBuff[0] = '\0';
+  strcat(outBuff, "/^b^a"); 
+  writeIntInBuff(timeClient.getHours());
+  writeIntInBuff(timeClient.getMinutes());
+  writeIntInBuff(timeClient.getSeconds());
+  sendMessageMega();
 }
 
 void loop() {
@@ -95,11 +101,17 @@ void loop() {
 //функции-обработчика сообщений телеграмм бота 
   void newMsg(FB_msg& msg){
     if (msg.OTA) bot.update();
-  //если ждём дополнительных данных из чата, записываем в буфер
+  //обработка и запись в буфер цифр из чата
     if (flagExpectMessage)    
     {
-      strcat(outBuff, "^"); 
-      strcat(outBuff,msg.text.c_str());      //дописываем в буффер данные
+      lengthOutMessage = strlen(outBuff);
+      outBuff[lengthOutMessage++] = '^';
+      const char* inMessageBot = msg.text.c_str();
+      for (int i = 0; inMessageBot[i] != '\0' ; i++)    //пробегаем по сообщению
+      {	    
+        if (inMessageBot[i] >= '0' && inMessageBot[i] <= '9') //выписываем все цифры в строку, 
+          outBuff[lengthOutMessage++] = inMessageBot[i];      //обработка и разделение на стороне приёмника
+      }
       flagExpectMessage = false;
     }
   //записываем в буффер сообщение
@@ -163,10 +175,22 @@ void loop() {
           strcat(outBuff, "/^c^f"); 
         }
       //------time---------------
+        //updateTime()  /^b^a  при перезагрузке и в полночь
+        if(msg.text.lastIndexOf("/update_time") != -1)
+        { 
+          strcat(outBuff, "/^b^a"); 
+          writeIntInBuff(timeClient.getHours());
+          writeIntInBuff(timeClient.getMinutes());
+          writeIntInBuff(timeClient.getSeconds());
+        }
         if(msg.text.lastIndexOf("/time_alarm") != -1)
         { 
           strcat(outBuff, "/^b^b"); 
           startExpectMessage();
+        }
+        if(msg.text.lastIndexOf("/off_alarm") != -1)
+        { 
+          strcat(outBuff, "/^b^с"); 
         }
     }
   //отправка данных в порт
@@ -188,21 +212,25 @@ void loop() {
     byte crc = crc8_bytes((byte*)&outBuff,lengthOutMessage);
     outBuff[lengthOutMessage++] = crc;
     outBuff[lengthOutMessage++] = ';';
-    Serial.write(outBuff, lengthOutMessage);     //send messege 
-      // String mess;
-        // mess += "crc= ";     // mess += crc;
-        // mess += "  length= ";  // mess += lengthOutMessage;
-       // bot.sendMessage (mess);
+    Serial.write(outBuff, lengthOutMessage);     //send messege      
   }
-//чтение данных из Serial
+//чтение данных от Mega
   void SerialRead() {
    if (Mega_serial.available()) 
    {
-    //повтораная отправка
-    if(Mega_serial.buf[0] == '*')
-      {
+     char command = Mega_serial.buf[0];
+     switch (command) {
+      //повтораная отправка
+      case('*'):
         Serial.write(outBuff, lengthOutMessage); 
-      }
+        break;       
+      case('#'):
+        bot.sendMessage ("fail");
+        break;
+      default:
+        bot.sendMessage(Mega_serial.buf);
+        break;
+     }
    }   
   } 
 //функция добавления числа в собщение на отправку
@@ -218,22 +246,20 @@ void loop() {
     //dtostrf(value,temp, DEC);  //преобразовываем число в char
     strcat(outBuff ,temp); //дописываем число в буфер
   }
-//запись времени в буфер
-  void updateTime(){
-    outBuff[0] = '\0';
-    strcat(outBuff, "/^b^a"); 
-    writeIntInBuff(timeClient.getHours());
-    writeIntInBuff(timeClient.getMinutes());
-    writeIntInBuff(timeClient.getSeconds());
-    sendMessageMega();
-  }
+
 //синхронизация времени с мегой в полночь
   void updateTimeMidnight(){
   //static bool updateTime = false;
   if (timeClient.getHours() == 0 && timeClient.getMinutes() == 0 &&
       timeClient.getSeconds() == 0 ) 
       {
-        updateTime();
+        outBuff[0] = '\0';
+        strcat(outBuff, "/^b^a"); 
+        writeIntInBuff(timeClient.getHours());
+        writeIntInBuff(timeClient.getMinutes());
+        writeIntInBuff(timeClient.getSeconds());
+        lengthOutMessage = strlen(outBuff);
+        sendMessageMega();
         delay(1000);   //задержка, что бы не было кучи обновлений времени в течении этой секунды при 00.00.00
       }  
   }

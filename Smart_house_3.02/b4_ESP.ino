@@ -1,17 +1,38 @@
 void ESP_parsing() {
   if (ESP_serial.available()) {    // если данные получены
-    //  /^a^a^234^...^crc;   формат принимаемой строки 
+  //  /^a^a^234^...^crc;   формат принимаемой строки 
+    PRINT("new message ", ESP_serial.buf);    
+
+  //обработка crc
     byte length = strlen(ESP_serial.buf);
     byte crc_mega = crc8_bytes((byte*)&ESP_serial, length-1);  //расчёт crc входящего сообщения без последнего байта
     byte crc_esp = (byte)(ESP_serial.buf[length-1]);   
-    PRINT("new message ", ESP_serial.buf);    
-    if(crc_mega != crc_esp) 
     {
-      outBuff[0] = '*';     
-      Serial3.write(outBuff, 1);
-      return;
-    }  
-    Serial.print( "OK"); 
+      static byte fail = 0;
+      if(crc_mega != crc_esp) 
+      {
+        if(fail < 15)           //запрос на повторную отправку 
+        {
+          sendMessageEsp ("*");   
+          fail++;
+          PRINT( "return", fail);      
+          return;
+        }
+        else                    //останавливаем попытки  
+        {
+          sendMessageEsp("#");  //fail
+          PRINT( "fail", fail); 
+          fail = 0;
+          return;
+        }
+      } 
+      else
+      {
+        fail = 0;
+        PRINT( "OK" , ""); 
+      }
+    }
+  //обработка сообщения
     char command1 = ESP_serial.buf[2]; 
     char command2 = ESP_serial.buf[4];
     byte am = ESP_parser.split();           //разделяeт строку на подстроки, заменяя разделители на NULL
@@ -23,19 +44,19 @@ void ESP_parsing() {
         switch(command2)
         {
           case('a'):
-            temperature_day = ESP_parser.getFloat(3) * 10;
+            temperature_day = ESP_parser.getInt(3);
             break;
           case('b'):
-            temperature_night = ESP_parser.getFloat(3) * 10;
+            temperature_night = ESP_parser.getInt(3);
             break;
           case('c'):
-            temperature_day_off  = ESP_parser.getFloat(3) * 10;
+            temperature_day_off = ESP_parser.getInt(3);
             break;
           case('d'):
-            temperature_sunrise = ESP_parser.getFloat(3) * 10;
+            temperature_sunrise = ESP_parser.getInt(3);
             break;
           case('e'):
-            temperature_our_house = ESP_parser.getFloat(3) * 10;
+            temperature_our_house = ESP_parser.getInt(3);
             break;
           case('f'):
             temperature_day += 5;
@@ -47,22 +68,36 @@ void ESP_parsing() {
             break;
         }        
       case('b'):          //time, alarm clock
-        if(command2 == 'a')
+        switch(command2)
         {
+        case ('a'):
           timeNow.hour = ESP_parser.getInt(3);
           timeNow.minute = ESP_parser.getInt(4); 
           timeNow.second = ESP_parser.getInt(5); 
           rtc.setTime(timeNow);  
-        }
-        if (command2 == 'b')
-        {
-          alarmClockH = ESP_parser.getInt(3);
-          alarmClockM = ESP_parser.getInt(4); 
+          break;
+        case ('b'):
+          alarmClockH = ESP_parser.getInt(3)/100;
+          alarmClockM = ESP_parser.getInt(3)%100; 
           sunriseStartSet();
           work_alarm_clock = true;
-        }
-        if (command2 == 'c')
+          //отправим в чат сообщение
+          char mess[33] = "the alarm will turn on in ";          
+          char temp[2];
+          itoa(alarmClockH.value, temp, DEC);
+          strcat(mess,temp);
+          strcat(mess,":");
+          itoa(alarmClockM.value, temp, DEC);
+          strcat(mess,temp);
+          sendMessageEsp( mess);
+          break;
+        case ('c') :
           work_alarm_clock = false;
+          sendMessageEsp( "alarm clock off");
+          break;
+        default:
+          break;  
+        }
         break;
       case('c'):          //script house
         switch(command2)
@@ -72,6 +107,7 @@ void ESP_parsing() {
             break;
           case('b'):
             script_house = SLEEP;
+            sendMessageEsp( "sweet dreams");
             break;
           case('c'):
             script_house = OUTSIDE_THE_HOME;
@@ -97,6 +133,10 @@ void ESP_parsing() {
     }
   }  
 }
+//отправка сообщения на esp
+  void sendMessageEsp (const char* mes) {
+    Serial3.write(mes, strlen(mes));
+  }
 
 // функция для расчёта crc
  byte crc8_bytes(byte *buffer, byte size) {
