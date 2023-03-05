@@ -5,8 +5,7 @@ void loop() {
  accomplishment_script_house ();      //режимы работы  
  lcd_imagin ();                        //вывод на экран
  control_joustick();                  //дописать нормально
- dimmer_temp ();
- light_bedroom();  
+ dimmer_temp (); 
  ESP_parsing();
 }
 

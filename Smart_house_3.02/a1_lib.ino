@@ -1,44 +1,10 @@
 
-
-//-------- iremote-----------
- #include "IRLremote.h"
-  CHashIR IRLremote;
-  uint32_t IRdata;
-
-//---------лента 2811--------
-  #include <FastLED.h>
-  //-----leds_contur---
-  #define LED_NUM 115   // количество светодиодов
-  CRGB leds[LED_NUM];
-  //----leds_centr----
-  #define LED_NUM_CENTR 40
-  CRGB leds_centr[LED_NUM_CENTR];
-  
-  #define COOLING  70    //длина пламени
-  #define SPARKING 150   //искры
-  bool gReverseDirection = false;
-  #define FRAMES_PER_SECOND 60
- 
-  using ledShov = void(*[])();
-  ledShov led_pattern = {Color, Cylon, rainbow, rainbow_With_Glitter, confetti, sinelon, juggle, bpm, color_Temperature };
-  const char *led_pattern_name[] ={"color", "cylon", "rainbow", "rainbowWithGlitter", "confetti", "sinelon", "juggle", "bpm", "color temperature"};
-  int8_t led_pattern_number = 0;
-  uint8_t quantity_led_pattern = sizeof(led_pattern) / sizeof(led_pattern[0]);
-  uint8_t gHue = 0; // rotating "base color" used by many of the patterns
-  uint8_t sped_led_show = 50;
- //--color temperature pattern
-  #define TEMPERATURE_1 Tungsten100W
-  #define TEMPERATURE_2 OvercastSky
-  // How many seconds to show each temperature before switching
-  #define DISPLAYTIME 20
-  // How many seconds to show black between switches
-  #define BLACKTIME   3
-  
 //---------дисплей-----------
   #include <Wire.h>                       // библиотека для протокола I2C 
   #include <LiquidCrystal_I2C.h>          // подключаем библиотеку для LCD 1602
   LiquidCrystal_I2C LCD(0x27, 20, 4);     // присваиваем имя LCD для дисплея
-
+  const char *led_pattern_name[] ={"color", "cylon", "rainbow", "rainbowWithGlitter", "confetti", "sinelon", "juggle", "bpm", "color temperature"};
+  int8_t led_pattern_number = 0;
 //---------модуль времени----
   #include <microDS3231.h>
   MicroDS3231 rtc;                        // SDA A4 SCL A5  
@@ -69,7 +35,7 @@
 //---------fun---------------
   Fun_cleaner fun(CLEANER_FUN_PIN) ;
   
-//---------ESP---------------  
+//---------UART---------------  
   #include "AsyncStream.h"
   #include "GParser.h"
   AsyncStream<40> ESP_serial(&Serial3,';',100); 

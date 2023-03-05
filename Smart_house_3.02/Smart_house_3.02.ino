@@ -1,4 +1,4 @@
-#define ver "3.03 "
+#define ver "3.03color music "
 #define DEBUGING 1
 
 //--------настройка--------
@@ -19,9 +19,6 @@
 #define HEATER_PIN_1 22     //обогреватель 1
 #define HEATER_PIN_2 23     //обогреватель 2
 #define DC18B20_PIN 24      //пин для термометров
-#define LED_PIN 27          //лента контур
-#define LED_PIN_CENTR 28    //лента центр
-//#define MLED_PIN 34         // пин светодиода режимов цветомузыки. событий.
 #define PIR_SENSOR 47       //датчик движения ик
 #define STIK_KEY_PIN 42     //btn joostic
 #define MIC_SENSOR 15       //датчик звука
@@ -31,9 +28,6 @@
 #define LCD_BRIGHTNESS 4    //яркость экрана, шим.
 //analog pin
 #define DHT_PIN A0          //датчик dht11
-#define SOUND_R A2          //аналоговый пин вход аудио, правый канал
-#define SOUND_L A3          //аналоговый пин вход аудио, левый канал
-#define SOUND_R_FREQ A1     // аналоговый пин вход аудио для режима с частотами (через кондер)
 #define STIK_Y_PIN A10      //joostic
 #define STIK_X_PIN A11
 #define PHOTO_SENSOR A12  //датчик освещённости

@@ -9,20 +9,12 @@ void setup() {
   pinMode(PHOTO_SENSOR, INPUT); 
   pinMode(PIR_SENSOR, INPUT);
   pinMode(MIC_SENSOR, INPUT);  
-//---------лента 2811-------
-  FastLED.addLeds< WS2811, LED_PIN, BRG>(leds, LED_NUM).setCorrection( TypicalLEDStrip );
-  FastLED.addLeds<WS2811, LED_PIN_CENTR, BRG>(leds_centr, LED_NUM_CENTR).setCorrection( TypicalLEDStrip );
-  FastLED.setBrightness(0);
-  FastLED.clear();
-  FastLED.show();   
 //---------дисплей---------
   LCD.init();            // инициализация LCD дисплея
   LCD.clear();
   LCD.backlight();       // включение подсветки дисплея
   LCD.setCursor(0,0);
   LCD.print( "version "); LCD.print( ver); LCD.print(LCDdebug);
-//---------ик приёмник------
-  IRLremote.begin(IR_PIN);
 //---------dht11----------
   dht.begin();
 //---------btn------
