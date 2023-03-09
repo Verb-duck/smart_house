@@ -82,16 +82,7 @@ void lcd_imagin () {
     LCD.print((float)temperature_night.value/10);
     break;
 
-    case (LED_PATTERN) : 
-    LCD.setCursor(0, 0);
-    LCD.print("led pattern show ");
-    LCD.setCursor(0, 1);
-    LCD.print(led_pattern_name[led_pattern_number]);
-    LCD.setCursor(0, 2);
-    LCD.print("speed: ");
-    LCD.setCursor(8, 2);
-    LCD.print(sped_led_show);
-    break;
+    
     
     default :
     break;

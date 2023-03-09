@@ -1,7 +1,6 @@
 
 
 // ***************************** НАСТРОЙКИ *****************************
-
   #define REMOTE_TYPE 3       // 0 - без пульта, 1 - пульт от WAVGAT, 2 - пульт от KEYES, 3 - кастомный пульт
  // ----- настройки параметров
   #define KEEP_SETTINGS 1     // хранить ВСЕ настройки в энергонезависимой памяти
@@ -24,6 +23,8 @@
   #define SPARKING 150   //искры
   bool gReverseDirection = false;
   #define FRAMES_PER_SECOND 60
+  #define TIME_SUNRISE 20              //время включения рассвета до будильника
+  int time_sunrise = TIME_SUNRISE * 60000 / 256; // вычесление периода добавления яркости рассвета
 
   byte Brightness = 255;      // яркость по умолчанию (0 - 255)
   uint8_t random_color;
@@ -31,11 +32,6 @@
   uint8_t light_color_now = 30;
   uint8_t light_saturation_now = 180;
   
-  using ledShov = void(*[])();
-  ledShov led_pattern = {Color, Cylon, rainbow, rainbow_With_Glitter, confetti, sinelon, juggle, bpm, color_Temperature };
-  const char *led_pattern_name[] ={"color", "cylon", "rainbow", "rainbowWithGlitter", "confetti", "sinelon", "juggle", "bpm", "color temperature"};
-  int8_t led_pattern_number = 0;
-  uint8_t quantity_led_pattern = sizeof(led_pattern) / sizeof(led_pattern[0]);
   uint8_t gHue = 0; // rotating "base color" used by many of the patterns
   uint8_t sped_led_show = 50;
  //--color temperature pattern
@@ -62,7 +58,7 @@
   };  
  //---------UART---------------  
   #include <SoftwareSerial.h>
-  SoftwareSerial SerialMega(7, 8); // RX, TX    
+  SoftwareSerial SerialMega(7, 8);   // RX, TX    
   #include "AsyncStream.h"
   #include "GParser.h"
   AsyncStream<40> ESP_serial(&SerialMega,';',100); 
@@ -321,9 +317,6 @@ void setup() {
   pinMode(MLED_PIN, OUTPUT);        //Режим пина для светодиода режима на выход
   digitalWrite(MLED_PIN, !MLED_ON); //Выключение светодиода режима
 
-  pinMode(13, OUTPUT);
-  analogWrite(13, 1200);
-
   IRLremote.begin(IR_PIN);
 
   SerialMega.begin(4000);
@@ -392,7 +385,7 @@ void loop() {
   remoteTick();     // опрос ИК пульта
   mainLoop();       // главный цикл обработки и отрисовки
   eepromTick();     // проверка не пора ли сохранить настройки
-  light_bedroom();  
+  light_bedroom();   
 }
 //CHSV  оттенок насыщенность яркость 
 //CHSV(30, 255, 255);  //желтый
@@ -447,7 +440,6 @@ void light_bedroom() {
   FastLED.setBrightness(Brightness);
   FastLED.show();
 }
-
 void paint_light (const int &color, const int &saturation, const int &hue, uint8_t next ) {
    Brightness = 255;
    static uint8_t LED_LEFT =  LED_NUM / 2; 
@@ -469,7 +461,6 @@ void paint_light (const int &color, const int &saturation, const int &hue, uint8
     LED_CENTR = 0;
    }
 }
-
 void normal_light() {
   static bool flagNorm = false;
   static bool flagColor = false;
@@ -498,7 +489,6 @@ void blackout_light() {
      mode_light_bedroom = OFF_LIGHT; 
   }  
 }
-
 void night_light() {
   PERIOD(100){ 
     if (Brightness < 100) { 
@@ -508,7 +498,6 @@ void night_light() {
     }
   }
 }
-
 void sunrise_light() {
   if (Brightness < 254) {
     PERIOD(time_sunrise) {      //плавный рассвет
@@ -546,63 +535,55 @@ void sunrise_light() {
     }
   }} 
 }
-
 void off_light() {
   Brightness = 0;
   FastLED.clear();
   mode_light_bedroom = NO_LIGHT;
 }
-
 // --------разные режимы подсветки-------------
-void Color() {}
+ void Color() {}
 
-void Cylon() {  
+ void Cylon() {  
     fadeToBlackBy( leds, LED_NUM, 20);
     byte dothue = 0;
     for( int i = 0; i < 8; i++) {
       leds[beatsin16( i+7, 0, LED_NUM-1 )] |= CHSV(dothue, 200, 255);
       dothue += 32; }
-}
-void rainbow() 
-{
+ }
+ void rainbow() {
   // FastLED's built-in rainbow generator
   fill_rainbow( leds, LED_NUM, gHue, 7);
-}
-
-void addGlitter( int chanceOfGlitter) 
-{
+ }
+ void addGlitter( int chanceOfGlitter) 
+  {
   if( random8() < chanceOfGlitter) {
     leds[ random16(LED_NUM) ] += CRGB::White;
   } 
-}
-
-void rainbow_With_Glitter() 
-{
+ }
+ void rainbow_With_Glitter() 
+  {
   // built-in FastLED rainbow, plus some random sparkly glitter
   rainbow();
   addGlitter(80);
-}
-
-
-
-void confetti() 
-{
+ }
+ void confetti() 
+  {
   // random colored speckles that blink in and fade smoothly
   fadeToBlackBy( leds, LED_NUM, 10);
   int pos = random16(LED_NUM);
   leds[pos] += CHSV( gHue + random8(64), 200, 255);
-}
+ }
 
-void sinelon()
-{
+ void sinelon()
+  {
   // a colored dot sweeping back and forth, with fading trails
   fadeToBlackBy( leds, LED_NUM, 20);
   int pos = beatsin16( 13, 0, LED_NUM-1 );
   leds[pos] += CHSV( gHue, 255, 192);
-}
+ }
 
-void bpm()
-{
+ void bpm()
+  {
   // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
   uint8_t BeatsPerMinute = 62;
   CRGBPalette16 palette = PartyColors_p;
@@ -610,9 +591,9 @@ void bpm()
   for( int i = 0; i < LED_NUM; i++) { //9948
     leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
   }
-}
+ }
 
-void juggle() {
+ void juggle() {
   // eight colored dots, weaving in and out of sync with each other
   fadeToBlackBy( leds, LED_NUM, 20);
   byte dothue = 0;
@@ -620,8 +601,8 @@ void juggle() {
     leds[beatsin16( i+7, 0, LED_NUM-1 )] |= CHSV(dothue, 200, 255);
     dothue += 32;
   }
-}
-void color_Temperature () {
+ }
+ void color_Temperature () {
   // draw a generic, no-name rainbow
   static uint8_t starthue = 0;
   fill_rainbow( leds + 5, LED_NUM - 5, --starthue, 20);
@@ -641,7 +622,9 @@ void color_Temperature () {
   //if( (secs % DISPLAYTIME) < BLACKTIME) {
   //  memset8( leds, 0, LED_NUM * sizeof(CRGB));
   //}
-}
+ }
+//
+
 void mainLoop() {
   // главный цикл отрисовки
   if (ONstate) {

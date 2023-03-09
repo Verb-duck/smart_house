@@ -74,16 +74,7 @@ void control_joustick(){
   case (MODE_LIGHTING) :
   break;
 
-  case (LED_PATTERN) :
-  if (joystick.click_right()) led_pattern_number++;
-  if (joystick.click_left()) led_pattern_number--;
-  if (joystick.click_up() && sped_led_show <= 200) sped_led_show += 5;
-  if(joystick.click_down() && sped_led_show >= 10) sped_led_show -= 5;
-  if (led_pattern_number >= quantity_led_pattern ) led_pattern_number = 0;
-  if (led_pattern_number < 0 ) led_pattern_number = quantity_led_pattern - 1;
-  break;
-
-  default :
+   default :
   break;
  }
  
