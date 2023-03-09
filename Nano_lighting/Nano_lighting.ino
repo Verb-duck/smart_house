@@ -9,7 +9,7 @@
   #define SETTINGS_LOG 0      // вывод всех настроек из EEPROM в порт при запуске
 
  // ----- настройки ленты
-  #define FASTLED_ALLOW_INTERRUPTS 1
+ // #define FASTLED_ALLOW_INTERRUPTS 1
   #include "FastLED.h"
   //-----leds_contur---
   #define LED_NUM 115        // количество светодиодов (данная версия поддерживает до 410 штук)
