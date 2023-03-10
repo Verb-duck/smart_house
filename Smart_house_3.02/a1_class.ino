@@ -1,4 +1,19 @@
 
+class Lighting_room {
+  private:
+  uint8_t _brightness = 0;
+
+  public:
+  void set_brightness( uint8_t bright ) {
+    if( bright >= 0 && bright <= 100) {
+      _brightness = map( bright , 0 , 100, 0 , 255);
+    }    
+  }
+  void work() {
+    
+  }
+};
+
 #include <microDS18B20.h>
 template <uint8_t HEATER_PIN , uint8_t DS_PIN = 255, uint8_t *DS_ADDR = (uint8_t*)nullptr>
 class Heater  {

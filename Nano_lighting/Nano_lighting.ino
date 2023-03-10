@@ -1,7 +1,6 @@
 
 
 // ***************************** НАСТРОЙКИ *****************************
-  #define REMOTE_TYPE 3       // 0 - без пульта, 1 - пульт от WAVGAT, 2 - пульт от KEYES, 3 - кастомный пульт
  // ----- настройки параметров
   #define KEEP_SETTINGS 1     // хранить ВСЕ настройки в энергонезависимой памяти
   #define KEEP_STATE 1		    // сохранять в памяти состояние вкл/выкл системы (с пульта)
@@ -9,7 +8,7 @@
   #define SETTINGS_LOG 0      // вывод всех настроек из EEPROM в порт при запуске
 
  // ----- настройки ленты
- // #define FASTLED_ALLOW_INTERRUPTS 1
+  #define FASTLED_ALLOW_INTERRUPTS 1
   #include "FastLED.h"
   //-----leds_contur---
   #define LED_NUM 115        // количество светодиодов (данная версия поддерживает до 410 штук)
@@ -41,20 +40,6 @@
   // How many seconds to show black between switches
   #define BLACKTIME   3
 
-  class Lighting_room {
-    private:
-    uint8_t _brightness = 0;
-
-    public:
-    void set_brightness( uint8_t bright ) {
-      if( bright >= 0 && bright <= 100) {
-        _brightness = map( bright , 0 , 100, 0 , 255);
-      }    
-    }
-    void work() {
-      
-    }
-  };  
  //---------UART---------------  
   #include <SoftwareSerial.h>
   SoftwareSerial SerialMega(7, 8);   // RX, TX    
@@ -68,12 +53,12 @@
   #define SOUND_R A1         // аналоговый пин вход аудио, правый канал
   #define SOUND_L A2         // аналоговый пин вход аудио, левый канал
   #define SOUND_R_FREQ A3    // аналоговый пин вход аудио для режима с частотами (через кондер)
-  #define BTN_PIN 6          // кнопка переключения режимов (PIN --- КНОПКА --- GND)
+  #define BTN_PIN 3          // кнопка переключения режимов (PIN --- КНОПКА --- GND)
   #define MLED_PIN A5             // пин светодиода режимов
   #define MLED_ON HIGH
   #define LED_PIN 4              // пин DI светодиодной ленты
   #define IR_PIN 3                // пин ИК приёмника
-  #define LED_PIN_CENTR 28    //лента центр
+  #define LED_PIN_CENTR 9    //лента центр
 
 
  // ----- настройки радуги 
@@ -87,8 +72,8 @@
   #define MONO 0                    // 1 - только один канал (ПРАВЫЙ!!!!! SOUND_R!!!!!), 0 - два канала
   #define EXP 1.4                   // степень усиления сигнала (для более "резкой" работы) (по умолчанию 1.4)
   #define POTENT 1                  // 1 - используем потенциометр, 0 - используется внутренний источник опорного напряжения 1.1 В
-  byte EMPTY_BRIGHT = 30;           // яркость "не горящих" светодиодов (0 - 255)
-  #define EMPTY_COLOR HUE_PINK    // цвет "не горящих" светодиодов. Будет чёрный, если яркость 0
+  byte EMPTY_BRIGHT = 15;           // яркость "не горящих" светодиодов (0 - 255)
+  #define EMPTY_COLOR HUE_AQUA    // цвет "не горящих" светодиодов. Будет чёрный, если яркость 0
 
  // ----- нижний порог шумов
   uint16_t LOW_PASS = 100;          // нижний порог шумов режим VU, ручная настройка
@@ -144,49 +129,6 @@
   */
 
  // ----- КНОПКИ ПУЛЬТА WAVGAT -----
-  #if REMOTE_TYPE == 1
-  #define BUTT_UP     0xF39EEBAD
-  #define BUTT_DOWN   0xC089F6AD
-  #define BUTT_LEFT   0xE25410AD
-  #define BUTT_RIGHT  0x14CE54AD
-  #define BUTT_OK     0x297C76AD
-  #define BUTT_1      0x4E5BA3AD
-  #define BUTT_2      0xE51CA6AD
-  #define BUTT_3      0xE207E1AD
-  #define BUTT_4      0x517068AD
-  #define BUTT_5      0x1B92DDAD
-  #define BUTT_6      0xAC2A56AD
-  #define BUTT_7      0x5484B6AD
-  #define BUTT_8      0xD22353AD
-  #define BUTT_9      0xDF3F4BAD
-  #define BUTT_0      0xF08A26AD
-  #define BUTT_STAR   0x68E456AD
-  #define BUTT_HASH   0x151CD6AD
-  #endif
-
-  // ----- КНОПКИ ПУЛЬТА KEYES -----
-  #if REMOTE_TYPE == 2
-  #define BUTT_UP     0xE51CA6AD
-  #define BUTT_DOWN   0xD22353AD
-  #define BUTT_LEFT   0x517068AD
-  #define BUTT_RIGHT  0xAC2A56AD
-  #define BUTT_OK     0x1B92DDAD
-  #define BUTT_1      0x68E456AD
-  #define BUTT_2      0xF08A26AD
-  #define BUTT_3      0x151CD6AD
-  #define BUTT_4      0x18319BAD
-  #define BUTT_5      0xF39EEBAD
-  #define BUTT_6      0x4AABDFAD
-  #define BUTT_7      0xE25410AD
-  #define BUTT_8      0x297C76AD
-  #define BUTT_9      0x14CE54AD
-  #define BUTT_0      0xC089F6AD
-  #define BUTT_STAR   0xAF3F1BAD
-  #define BUTT_HASH   0x38379AD
-  #endif
-
-  // ----- КНОПКИ СВОЕГО ПУЛЬТА -----
-  #if REMOTE_TYPE == 3
   #define BUTT_UP     0xE207E1AD    //ch+
   #define BUTT_DOWN   0x4E5BA3AD    //ch-
   #define BUTT_LEFT   0x517068AD    //prew
@@ -204,7 +146,6 @@
   #define BUTT_0      0x68E456AD
   #define BUTT_STAR   0xAC2A56AD  // play
   #define BUTT_HASH   0xDF3F4BAD   // eq
-  #endif
 
 
  // ------------------------------ ДЛЯ РАЗРАБОТЧИКОВ --------------------------------
@@ -217,9 +158,7 @@
   #define LOG_OUT 1
   #include <FHT.h>         // преобразование Хартли
 
-  #include <EEPROMex.h>
-
- 
+  #include <EEPROMex.h> 
 
   #include "IRLremote.h"
   CHashIR IRLremote;
@@ -287,27 +226,17 @@
   #define PRINT(titly, y)
   #define LCDdebug ""
   #endif
- //enum struct пересобрать
+ //enum 
   enum MODE_LIGHT_BEDROM {
     OFF_LIGHT,  START_LIGHT,  NORMAL_LIGHT,  BLACKOUT_LIGHT,
     NIGHT_LIGHT,  SUNRISE_LIGHT, NO_LIGHT, COLOR_MUSIC, SUNSET_LIGHT,
   } mode_light_bedroom;
 
-  struct LIGHT_BEDROM {
-    enum PART_LIGHTING{
-      FULL, CENTR, PERIMETR,
-    } ;
-    PART_LIGHTING part_lighting;
-    MODE_LIGHT_BEDROM next_mode;
-  };
-  LIGHT_BEDROM sunset { LIGHT_BEDROM::FULL, START_LIGHT};
-
-
 void setup() {
   Serial.begin(9600);
  //---------лента 2811------- 
   FastLED.addLeds<WS2811, LED_PIN, GRB>(leds, LED_NUM).setCorrection( TypicalLEDStrip );
- // FastLED.addLeds<WS2811, LED_PIN_CENTR, BRG>(leds_centr, LED_NUM_CENTR).setCorrection( TypicalLEDStrip );
+  FastLED.addLeds<WS2811, LED_PIN_CENTR, GRB>(leds_centr, LED_NUM_CENTR).setCorrection( TypicalLEDStrip );
   FastLED.setBrightness(Brightness);
   FastLED.clear();
   FastLED.show();   
@@ -383,7 +312,7 @@ void loop() {
   remoteTick();     // опрос ИК пульта
   mainLoop();       // главный цикл обработки и отрисовки
   eepromTick();     // проверка не пора ли сохранить настройки
-  light_bedroom(); 
+  //light_bedroom(); 
 
 }
 //CHSV  оттенок насыщенность яркость 
@@ -961,7 +890,6 @@ float smartIncrFloat(float value, float incr_step, float mininmum, float maximum
   return val_buf;
 }
 
-#if REMOTE_TYPE != 0
 void remoteTick() {
   if (IRLremote.available())  {
     auto data = IRLremote.read();
@@ -1144,7 +1072,6 @@ void remoteTick() {
     ir_flag = false;
   }
 }
-#endif
 
 void autoLowPass() {
   // для режима VU
