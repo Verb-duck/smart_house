@@ -14,7 +14,6 @@
   //-----leds_contur---
   #define LED_NUM 115        // количество светодиодов (данная версия поддерживает до 410 штук)
   CRGB leds[LED_NUM];
-  #define CURRENT_LIMIT 0  // лимит по току в МИЛЛИАМПЕРАХ, автоматически управляет яркостью (пожалей свой блок питания!) 0 - выключить лимит
   //----leds_centr----
   #define LED_NUM_CENTR 40
   CRGB leds_centr[LED_NUM_CENTR];
@@ -60,8 +59,8 @@
   #include <SoftwareSerial.h>
   SoftwareSerial SerialMega(7, 8);   // RX, TX    
   #include "AsyncStream.h"
-  #include "GParser.h"
   AsyncStream<40> ESP_serial(&SerialMega,';',100); 
+  #include "GParser.h"
   GParser ESP_parser (ESP_serial.buf, '^');
   char outBuff[20];  
  
@@ -308,8 +307,7 @@ void setup() {
   Serial.begin(9600);
  //---------лента 2811------- 
   FastLED.addLeds<WS2811, LED_PIN, GRB>(leds, LED_NUM).setCorrection( TypicalLEDStrip );
-  if (CURRENT_LIMIT > 0) FastLED.setMaxPowerInVoltsAndMilliamps(5, CURRENT_LIMIT);
-  FastLED.addLeds<WS2811, LED_PIN_CENTR, BRG>(leds_centr, LED_NUM_CENTR).setCorrection( TypicalLEDStrip );
+ // FastLED.addLeds<WS2811, LED_PIN_CENTR, BRG>(leds_centr, LED_NUM_CENTR).setCorrection( TypicalLEDStrip );
   FastLED.setBrightness(Brightness);
   FastLED.clear();
   FastLED.show();   
@@ -385,7 +383,8 @@ void loop() {
   remoteTick();     // опрос ИК пульта
   mainLoop();       // главный цикл обработки и отрисовки
   eepromTick();     // проверка не пора ли сохранить настройки
-  light_bedroom();   
+  light_bedroom(); 
+
 }
 //CHSV  оттенок насыщенность яркость 
 //CHSV(30, 255, 255);  //желтый
@@ -401,8 +400,7 @@ void light_bedroom() {
       
     case (NORMAL_LIGHT) :
       normal_light();
-      break; 
-      
+      break;       
     
     case (START_LIGHT) :
       if (flag_one_start)  {          //задержка на включение света
@@ -439,7 +437,7 @@ void light_bedroom() {
   }
   FastLED.setBrightness(Brightness);
   FastLED.show();
-}
+ }
 void paint_light (const int &color, const int &saturation, const int &hue, uint8_t next ) {
    Brightness = 255;
    static uint8_t LED_LEFT =  LED_NUM / 2; 
@@ -460,7 +458,7 @@ void paint_light (const int &color, const int &saturation, const int &hue, uint8
     LED_RIGHT =  LED_NUM / 2;
     LED_CENTR = 0;
    }
-}
+ }
 void normal_light() {
   static bool flagNorm = false;
   static bool flagColor = false;
@@ -488,7 +486,7 @@ void blackout_light() {
     if (Brightness == 0)  
      mode_light_bedroom = OFF_LIGHT; 
   }  
-}
+ }
 void night_light() {
   PERIOD(100){ 
     if (Brightness < 100) { 
@@ -497,7 +495,7 @@ void night_light() {
       leds[i] = CHSV(0, 150, 255);    
     }
   }
-}
+ }
 void sunrise_light() {
   if (Brightness < 254) {
     PERIOD(time_sunrise) {      //плавный рассвет
@@ -534,12 +532,12 @@ void sunrise_light() {
       leds[pixelnumber] = color;
     }
   }} 
-}
+ }
 void off_light() {
   Brightness = 0;
   FastLED.clear();
   mode_light_bedroom = NO_LIGHT;
-}
+ }
 // --------разные режимы подсветки-------------
  void Color() {}
 
