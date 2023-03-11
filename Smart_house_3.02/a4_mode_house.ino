@@ -11,7 +11,6 @@ void accomplishment_script_house () {
         mode_light_bedroom = START_LIGHT;
         randomSeed( millis());  random_color = random(256);             //рандом цвета заполнения центр ленты
         randomSeed( micros());  random_saturation = random(170 , 256);  //рандом насыщенности заполнения центр ленты
-        randomSeed( millis());  led_pattern_number = 0;                 //выбор режима подсветки
         last_script_house = MOVE;
         fun.cleaner(off);
       }
