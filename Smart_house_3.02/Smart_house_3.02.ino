@@ -44,7 +44,7 @@
      struct pair {
 	  Type value;
 	  int addr;
-	  pair(Type f = Type(), int s = 254) : value(f), addr(s) {}	
+	  pair(Type f = Type(), int s = 255) : value(f), addr(s) {}	
     void operator =(Type value) 
     {
       this->value = value; 
@@ -68,18 +68,18 @@
     ENUM = 2,
   	FLOAT = 4, // 4 byte 
   };
-  //построение пары, присвоение адреса в EEPROM
+  //создание переменной с присвоением адреса в EEPROM
   	int next_addr = 2;       //0 занят для key_EEPROM
     template <class Type>
     pair<Type> create (const Type value, typeValue type) {
-  	int count_addr = next_addr;
-  	next_addr += (int)type;
-  	return pair<Type> (value, count_addr);	
-  }
+  	  int count_addr = next_addr;
+  	  next_addr += (int)type;
+    	return pair<Type> (value, count_addr);	
+    }
 
   template <class Type>
   bool writeEEPROM (pair<Type> &pp ) {
-    EEPROM.put(pp.addr,pp.value) ;
+    EEPROM.update(pp.addr,pp.value) ;
   return 0;
   } 
 

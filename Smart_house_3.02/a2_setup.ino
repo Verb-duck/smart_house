@@ -4,17 +4,12 @@ void setup() {
   #if (DEBUGING == 1) 
   Serial.begin(9600);
   #endif
+  Serial2.begin(4800);        //связь с нано
   Serial3.begin(115200);      //связь с есп
 //---------пины--------
   pinMode(PHOTO_SENSOR, INPUT); 
   pinMode(PIR_SENSOR, INPUT);
-  pinMode(MIC_SENSOR, INPUT);  
-//---------лента 2811-------
-  FastLED.addLeds< WS2811, LED_PIN, BRG>(leds, LED_NUM).setCorrection( TypicalLEDStrip );
-  FastLED.addLeds<WS2811, LED_PIN_CENTR, BRG>(leds_centr, LED_NUM_CENTR).setCorrection( TypicalLEDStrip );
-  FastLED.setBrightness(0);
-  FastLED.clear();
-  FastLED.show();   
+  pinMode(MIC_SENSOR, INPUT);   
 //---------дисплей---------
   LCD.init();            // инициализация LCD дисплея
   LCD.clear();

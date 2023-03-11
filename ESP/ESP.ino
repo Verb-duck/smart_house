@@ -236,7 +236,7 @@ void loop() {
 //функция добавления числа в собщение на отправку
   void writeIntInBuff ( byte value){
     strcat(outBuff, "^");  //дописываем разделитель в буфер
-    char temp[2];
+    char temp[4];
     itoa(value,temp, DEC);  //преобразовываем число в char
     strcat(outBuff ,temp); //дописываем число в буфер
   }

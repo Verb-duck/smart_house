@@ -1,4 +1,5 @@
-void ESP_parsing() {
+//связь с esp 
+ void serialReadEsp() {
   if (ESP_serial.available()) {    // если данные получены
   //  /^a^a^234^...^crc;   формат принимаемой строки 
     PRINT("new message ", ESP_serial.buf);    
@@ -13,14 +14,14 @@ void ESP_parsing() {
       {
         if(fail < 15)           //запрос на повторную отправку 
         {
-          sendMessageEsp ("*");   
+          serialWriteEsp ("*");   
           fail++;
           PRINT( "return", fail);      
           return;
         }
         else                    //останавливаем попытки  
         {
-          sendMessageEsp("#");  //fail
+          serialWriteEsp("#");  //fail
           PRINT( "fail", fail); 
           fail = 0;
           return;
@@ -89,11 +90,11 @@ void ESP_parsing() {
           strcat(mess,":");
           itoa(alarmClockM.value, temp, DEC);
           strcat(mess,temp);
-          sendMessageEsp( mess);
+          serialWriteEsp( mess);
           break;
         case ('c') :
           work_alarm_clock = false;
-          sendMessageEsp( "alarm clock off");
+          serialWriteEsp( "alarm clock off");
           break;
         default:
           break;  
@@ -107,7 +108,7 @@ void ESP_parsing() {
             break;
           case('b'):
             script_house = SLEEP;
-            sendMessageEsp( "sweet dreams");
+            serialWriteEsp( "sweet dreams");
             break;
           case('c'):
             script_house = OUTSIDE_THE_HOME;
@@ -132,12 +133,37 @@ void ESP_parsing() {
       }
     }
   }  
-}
-//отправка сообщения на esp
-  void sendMessageEsp (const char* mes) {
+ }
+ void serialWriteEsp (const char* mes) {
     Serial3.write(mes, strlen(mes));
+ }
+//связь с нано
+ void serialWriteNano (const uint8_t value, char name){
+    lengthOutMessageNano = 0;     
+    outBuffNano[lengthOutMessageNano++] = name;
+    outBuffNano[lengthOutMessageNano++] = '^';
+    outBuffNano[lengthOutMessageNano++] = value;
+    outBuffNano[lengthOutMessageNano++] = '^';
+    byte crc = crc8_bytes((byte*)&outBuffNano,lengthOutMessageNano);
+    outBuffNano[lengthOutMessageNano++] = crc;
+    outBuffNano[lengthOutMessageNano++] = ';';
+    Serial2.write(outBuffNano, lengthOutMessageNano);     //send messege  
+    PRINT( "message nano", outBuffNano); 
   }
-
+ void serialReadNano() {
+   if (Nano_serial.available()) 
+   {
+     char command = Nano_serial.buf[0];
+     switch (command) {
+      //повтораная отправка
+      case('*'):
+        Serial2.write(outBuffNano, lengthOutMessageNano); 
+        break;       
+      default:
+        break;
+     }
+   }   
+  } 
 // функция для расчёта crc
  byte crc8_bytes(byte *buffer, byte size) {
   byte crc = 0;
@@ -150,3 +176,16 @@ void ESP_parsing() {
   }
   return crc;
  }
+//функция добавления числа в собщение на отправку
+  void writeIntInBuff ( byte value, char* outBuff){
+    strcat(outBuff, "^");  //дописываем разделитель в буфер
+    char temp[4];
+    itoa(value,temp, DEC);  //преобразовываем число в char
+    strcat(outBuff ,temp); //дописываем число в буфер
+  }
+  void writeIntFloatBuff ( float value, char* outBuff){
+    strcat(outBuff, "^");  //дописываем разделитель в буфер
+    char temp[4];
+    //dtostrf(value,temp, DEC);  //преобразовываем число в char
+    strcat(outBuff ,temp); //дописываем число в буфер
+  }

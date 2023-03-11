@@ -8,9 +8,7 @@ void accomplishment_script_house () {
       if ( last_script_house != MOVE ) {            //если первый запуск
         heater_room_1.set_temperature (&temperature_day.value);
         heater_room_2.set_temperature (&temperature_day.value);
-        mode_light_bedroom = START_LIGHT;
-        randomSeed( millis());  random_color = random(256);             //рандом цвета заполнения центр ленты
-        randomSeed( micros());  random_saturation = random(170 , 256);  //рандом насыщенности заполнения центр ленты
+        mode_light_bedroom = START_LIGHT; serialWriteNano(mode_light_bedroom, 'a');
         last_script_house = MOVE;
         fun.cleaner(off);
       }
@@ -27,7 +25,7 @@ void accomplishment_script_house () {
       if ( last_script_house != NO_MOVE ) {            //если первый запуск
         heater_room_1.set_temperature (&temperature_day_off.value);
         heater_room_2.set_temperature (&temperature_day_off.value);
-        mode_light_bedroom = OFF_LIGHT;
+        mode_light_bedroom = OFF_LIGHT;serialWriteNano(mode_light_bedroom, 'a');
         last_script_house = NO_MOVE;
         fun.cleaner(on); 
       }
@@ -40,7 +38,7 @@ void accomplishment_script_house () {
       if ( last_script_house != VIEWING_FILM ) {            //если первый запуск
         heater_room_1.set_temperature (&temperature_day.value);
         heater_room_2.set_temperature (&temperature_day.value);
-        mode_light_bedroom = OFF_LIGHT;
+        mode_light_bedroom = OFF_LIGHT;serialWriteNano(mode_light_bedroom, 'a');
         last_script_house = VIEWING_FILM;
         fun.cleaner(off); 
       }      
@@ -51,7 +49,7 @@ void accomplishment_script_house () {
 //----------NIGHT-------------    
         case( SLEEP) :
         if ( last_script_house != SLEEP ) {            //если первый запуск
-          mode_light_bedroom = SUNSET_LIGHT; 
+          mode_light_bedroom = SUNSET_LIGHT; serialWriteNano(mode_light_bedroom, 'a');
           last_script_house = SLEEP;
           heater_room_1.set_temperature (&temperature_night.value);
           heater_room_2.set_temperature (&temperature_night.value);
@@ -80,7 +78,7 @@ void accomplishment_script_house () {
         if ( last_script_house != SUNRISE ) {            //если первый запуск
           heater_room_1.set_temperature (&temperature_sunrise.value);
           heater_room_2.set_temperature (&temperature_sunrise.value);
-          mode_light_bedroom = SUNRISE_LIGHT;
+          mode_light_bedroom = SUNRISE_LIGHT;serialWriteNano(mode_light_bedroom, 'a');
           last_script_house = SUNRISE;
         }
       //выключение будильника при движении    
@@ -105,7 +103,7 @@ void accomplishment_script_house () {
         last_script_house =  OUTSIDE_THE_HOME;
         heater_room_1.set_temperature (&temperature_our_house.value);
         heater_room_2.set_temperature (&temperature_our_house.value);
-        mode_light_bedroom = OFF_LIGHT;
+        mode_light_bedroom = OFF_LIGHT;serialWriteNano(mode_light_bedroom, 'a');
       }
       break;
 //**********OUTSIDE_THE_HOME 

@@ -2,6 +2,7 @@
 
 // ***************************** НАСТРОЙКИ *****************************
  // ----- настройки параметров
+  #define DEBUGING  1
   #define KEEP_SETTINGS 1     // хранить ВСЕ настройки в энергонезависимой памяти
   #define KEEP_STATE 1		    // сохранять в памяти состояние вкл/выкл системы (с пульта)
   #define RESET_SETTINGS 0    // сброс настроек в EEPROM памяти (поставить 1, прошиться, поставить обратно 0, прошиться. Всё)
@@ -24,7 +25,7 @@
   #define TIME_SUNRISE 40              //время включения рассвета до будильника
   int time_sunrise = TIME_SUNRISE * 60000 / 256; // вычесление периода добавления яркости рассвета
 
-  byte Brightness = 255;      // яркость по умолчанию (0 - 255)
+  byte Brightness = 10;      // яркость по умолчанию (0 - 255)
   uint8_t random_color;
   uint8_t random_saturation;
   uint8_t light_color_now = 30;
@@ -44,9 +45,9 @@
   #include <SoftwareSerial.h>
   SoftwareSerial SerialMega(7, 8);   // RX, TX    
   #include "AsyncStream.h"
-  AsyncStream<40> ESP_serial(&SerialMega,';',100); 
+  AsyncStream<40> Mega_serial(&SerialMega,';',100); 
   #include "GParser.h"
-  GParser ESP_parser (ESP_serial.buf, '^');
+  GParser Mrga_parser (Mega_serial.buf, '^');
   char outBuff[20];  
  
  // ----- пины подключения
@@ -227,11 +228,13 @@
  //enum 
   enum MODE_LIGHT_BEDROM {
     OFF_LIGHT,  START_LIGHT,  NORMAL_LIGHT,  BLACKOUT_LIGHT,
-    NIGHT_LIGHT,  SUNRISE_LIGHT, COLOR_MUSIC, SUNSET_LIGHT,
-  } mode_light_bedroom(NORMAL_LIGHT);
+    NIGHT_LIGHT,  SUNRISE_LIGHT, COLOR_MUSIC, SUNSET_LIGHT, NO_ACTION,
+  } mode_light_bedroom(SUNRISE_LIGHT);
 
 void setup() {
   Serial.begin(9600);
+  SerialMega.begin(4800);
+  PRINT(" start", " ok");
  //---------лента 2811------- 
   FastLED.addLeds<WS2811, LED_PIN, GRB>(leds, LED_NUM).setCorrection( TypicalLEDStrip );
   FastLED.addLeds<WS2811, LED_PIN_CENTR, GRB>(leds_centr, LED_NUM_CENTR).setCorrection( TypicalLEDStrip );
@@ -244,7 +247,6 @@ void setup() {
 
   IRLremote.begin(IR_PIN);
 
-  SerialMega.begin(4000);
   if (POTENT) analogReference(EXTERNAL);
   else
  #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
@@ -310,11 +312,11 @@ void loop() {
   remoteTick();     // опрос ИК пульта
   mainLoop();       // главный цикл обработки и отрисовки
   eepromTick();     // проверка не пора ли сохранить настройки
+  serialRead();     // связь с мегой
 }
 
 void mainLoop() {
   // главный цикл отрисовки
-  if (ONstate) {
     if (millis() - main_timer > MAIN_LOOP) {
       // сбрасываем значения
       RsoundLevel = 0;
@@ -434,7 +436,6 @@ void mainLoop() {
         FastLED.clear();          // очистить массив пикселей
       main_timer = millis();    // сбросить таймер
     }
-  }
 }
 
 void animation() {
@@ -503,23 +504,21 @@ void animation() {
       static bool flag_one_start = true; 
       switch (mode_light_bedroom) {         
       case (NORMAL_LIGHT) :
-        static bool flagNorm = false;
         static bool flagColor = false;
         static bool flagSaturation = false;
-        if(!flagNorm)   
         {PERIOD (100) {
-          if ( random_color != light_color_now || random_saturation != light_saturation_now) {
-            if ( random_color != light_color_now)random_color ++;
-            else flagColor = true;
-            if ( random_saturation < light_saturation_now) random_saturation++;
-            else if ( random_saturation > light_saturation_now) random_saturation--;
-            else flagSaturation = true;
-            for( int i = 0; i < LED_NUM_CENTR; i++) 
-              leds_centr[i] = CHSV(random_color, random_saturation, 255); 
-            for( int i = 0; i < LED_NUM; i++) 
-              leds[i] = CHSV(random_color, random_saturation, 255); 
-            if(flagColor && flagSaturation) flagNorm = true;
-          }
+          Brightness = 255;          
+          if ( random_color != light_color_now)random_color ++;
+          else flagColor = true;
+          if ( random_saturation < light_saturation_now) random_saturation++;
+          //else if ( random_saturation > light_saturation_now) random_saturation--;
+          else flagSaturation = true;
+          for( int i = 0; i < LED_NUM_CENTR; i++) 
+            leds_centr[i] = CHSV(random_color, random_saturation, 255); 
+          for( int i = 0; i < LED_NUM; i++) 
+            leds[i] = CHSV(random_color, random_saturation, 255); 
+          if(flagColor && flagSaturation)  
+            mode_light_bedroom = NO_ACTION;
         }}   
         break;
       case (START_LIGHT) :
@@ -528,6 +527,8 @@ void animation() {
           timer_waiting = millis(); 
           randomSeed( millis());  random_color = random(255);             //рандом цвета заполнения ленты
           randomSeed( micros());  random_saturation = random(100 , 255);  //рандом насыщенности заполнения ленты
+          Brightness = 255;
+          FastLED.setBrightness(Brightness);
         }
         if (millis() - timer_waiting >= 1000) 
           paint_light (random_color, random_saturation, 255, NORMAL_LIGHT);
@@ -539,7 +540,7 @@ void animation() {
             Brightness++; 
             FastLED.setBrightness(Brightness);
         }} 
-        {PERIOD (40) {
+        {PERIOD (20) {
           static byte heat[LED_NUM];
         // Step 1.  Cool down every cell a little
           for( int i = 0; i < LED_NUM; i++) {
@@ -600,8 +601,10 @@ void animation() {
         FastLED.clear();    
         EEPROM.updateByte(65, mode_light_bedroom); 
         EEPROM.updateByte(66, Brightness);  
+        mode_light_bedroom = NO_ACTION;
+        break; 
+      case (NO_ACTION) :
         break;
-      
       default :
         break;
       }
@@ -679,26 +682,86 @@ void animation() {
       break;
   }
 }
+void serialRead() {
+  if (Mega_serial.available()) {    // если данные получены
+  //  /^a^a^234^...^crc;   формат принимаемой строки 
+    PRINT("new message ", Mega_serial.buf);    
 
+  //обработка crc
+    byte length = strlen(Mega_serial.buf);
+    byte crc_mega = crc8_bytes((byte*)&Mega_serial, length-1);  //расчёт crc входящего сообщения без последнего байта
+    byte crc_esp = (byte)(Mega_serial.buf[length-1]);   
+    {
+      //static byte fail = 0;
+      if(crc_mega != crc_esp) 
+      {
+        //if(fail < 15)           //запрос на повторную отправку 
+        {
+          serialWrite ("*");   
+          //fail++;
+          return;
+        }
+        // else                    //останавливаем попытки  
+        // {
+        //   serialWrite("#");  //fail
+        //   PRINT( "fail", fail); 
+        //   fail = 0;
+        //   return;
+        // }
+      } 
+      // else
+      // {
+      //   fail = 0;
+      //   PRINT( "OK" , ""); 
+      // }
+    }
+  //обработка сообщения
+    char command1 = Mega_serial.buf[0]; 
+    char command2 = Mega_serial.buf[2];
+    byte am = Mrga_parser.split();           //разделяeт строку на подстроки, заменяя разделители на NULL
+    switch(command1)
+    {
+      case('a'):          //mode_light_bedroom
+        mode_light_bedroom = (byte)Mega_serial.buf[2];
+        this_mode = 4;
+        eeprom_flag = false;
+    }
+ }
+}
+
+void serialWrite (const char* mes) {
+    SerialMega.write(mes, strlen(mes));
+ }
+// функция для расчёта crc
+ byte crc8_bytes(byte *buffer, byte size) {
+  byte crc = 0;
+  for (byte i = 0; i < size; i++) {
+    byte data = buffer[i];
+    for (int j = 8; j > 0; j--) {
+      crc = ((crc ^ data) & 1) ? (crc >> 1) ^ 0x8C : (crc >> 1);
+      data >>= 1;
+    }
+  }
+  return crc;
+ }
 void HIGHS() {
   for (int i = 0; i < LED_NUM; i++) leds[i] = CHSV(HIGH_COLOR, 255, thisBright[2]);
-}
+ }
 void MIDS() {
   for (int i = 0; i < LED_NUM; i++) leds[i] = CHSV(MID_COLOR, 255, thisBright[1]);
-}
+ }
 void LOWS() {
   for (int i = 0; i < LED_NUM; i++) leds[i] = CHSV(LOW_COLOR, 255, thisBright[0]);
-}
+ }
 void SILENCE() {
   for (int i = 0; i < LED_NUM; i++) leds[i] = CHSV(EMPTY_COLOR, 255, EMPTY_BRIGHT);
-}
-//заполнение зветом
-void paint_light (const int &color, const int &saturation, const int &hue, uint8_t next ) {
-   Brightness = 255;
+ }
+//заполнение цветом
+ void paint_light (const int &color, const int &saturation, const int &hue, uint8_t next ) {
    static uint8_t LED_LEFT =  LED_NUM / 2; 
    static uint8_t LED_RIGHT =  LED_NUM / 2;
    static uint8_t LED_CENTR;
-   {PERIOD (100) { 
+   {PERIOD (300) { 
     if( LED_RIGHT < LED_NUM) {
       leds[LED_RIGHT++]= CHSV( color, saturation ,hue); 
       leds[LED_LEFT--] = CHSV( color, saturation ,hue); 

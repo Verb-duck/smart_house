@@ -6,8 +6,8 @@ void loop() {
  lcd_imagin ();                        //вывод на экран
  control_joustick();                  //дописать нормально
  dimmer_temp ();
- light_bedroom();  
- ESP_parsing();
+ serialReadEsp();
+ serialReadNano(); 
 }
 
 //---------подстройка температуры----------
