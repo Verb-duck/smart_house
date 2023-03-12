@@ -4,7 +4,7 @@ void setup() {
   #if (DEBUGING == 1) 
   Serial.begin(9600);
   #endif
-  Serial2.begin(4800);        //связь с нано
+  Serial2.begin(9600);        //связь с нано
   Serial3.begin(115200);      //связь с есп
 //---------пины--------
   pinMode(PHOTO_SENSOR, INPUT); 

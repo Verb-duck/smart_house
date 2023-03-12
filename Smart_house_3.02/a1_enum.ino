@@ -10,9 +10,9 @@ enum SCRIPT_HOUSE {
 auto script_house (create(NO_MOVE, ENUM));       //режим работы,создание пары (значение,адрес)
 SCRIPT_HOUSE last_script_house  = FIRST_SCRIP; 
 
-enum MODE_LIGHT_BEDROM {
-  OFF_LIGHT,  START_LIGHT,  NORMAL_LIGHT,  BLACKOUT_LIGHT,
-  NIGHT_LIGHT,  SUNRISE_LIGHT, COLOR_MUSIC, SUNSET_LIGHT,
+enum MODE_LIGHT_BEDROM {   //нулевой не отправляет по сериал, NULL_LIGHT как заглушка
+  NULL_LIGHT, OFF_LIGHT,  START_LIGHT,  NORMAL_LIGHT,  BLACKOUT_LIGHT,
+  NIGHT_LIGHT,  SUNRISE_LIGHT, COLOR_MUSIC, SUNSET_LIGHT, 
 } mode_light_bedroom;
 
 

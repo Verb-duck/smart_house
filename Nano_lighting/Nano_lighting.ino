@@ -6,7 +6,8 @@
   #define KEEP_SETTINGS 1     // хранить ВСЕ настройки в энергонезависимой памяти
   #define KEEP_STATE 1		    // сохранять в памяти состояние вкл/выкл системы (с пульта)
   #define RESET_SETTINGS 0    // сброс настроек в EEPROM памяти (поставить 1, прошиться, поставить обратно 0, прошиться. Всё)
-  #define SETTINGS_LOG 0      // вывод всех настроек из EEPROM в порт при запуске
+  #define SETTINGS_LOG 1      // вывод всех настроек из EEPROM в порт при запуске
+  #define REMOTE_KEY 1
 
  // ----- настройки ленты
   #define FASTLED_ALLOW_INTERRUPTS 1
@@ -30,6 +31,7 @@
   uint8_t random_saturation;
   uint8_t light_color_now = 30;
   uint8_t light_saturation_now = 180;
+  uint8_t light_hue_now = 255;
   
   uint8_t gHue = 0; // rotating "base color" used by many of the patterns
   uint8_t sped_led_show = 50;
@@ -47,7 +49,7 @@
   #include "AsyncStream.h"
   AsyncStream<40> Mega_serial(&SerialMega,';',100); 
   #include "GParser.h"
-  GParser Mrga_parser (Mega_serial.buf, '^');
+  GParser Mega_parser (Mega_serial.buf, '^');
   char outBuff[20];  
  
  // ----- пины подключения
@@ -74,7 +76,7 @@
   #define EXP 1.4                   // степень усиления сигнала (для более "резкой" работы) (по умолчанию 1.4)
   #define POTENT 1                  // 1 - используем потенциометр, 0 - используется внутренний источник опорного напряжения 1.1 В
   byte EMPTY_BRIGHT = 15;           // яркость "не горящих" светодиодов (0 - 255)
-  #define EMPTY_COLOR HUE_AQUA    // цвет "не горящих" светодиодов. Будет чёрный, если яркость 0
+  #define EMPTY_COLOR HUE_ORANGE    // цвет "не горящих" светодиодов. Будет чёрный, если яркость 0
 
  // ----- нижний порог шумов
   uint16_t LOW_PASS = 100;          // нижний порог шумов режим VU, ручная настройка
@@ -93,7 +95,7 @@
   float MAX_COEF_FREQ = 1.2;        // коэффициент порога для "вспышки" цветомузыки (по умолчанию 1.5)
   #define SMOOTH_STEP 20            // шаг уменьшения яркости в режиме цветомузыки (чем больше, тем быстрее гаснет)
   #define LOW_COLOR HUE_RED         // цвет низких частот
-  #define MID_COLOR HUE_GREEN       // цвет средних
+  #define MID_COLOR HUE_BLUE       // цвет средних
   #define HIGH_COLOR HUE_YELLOW     // цвет высоких
 
  // ----- режим стробоскопа
@@ -130,24 +132,73 @@
   */
 
  // ----- КНОПКИ ПУЛЬТА -----
-  #define BUTT_UP     0xE207E1AD    //ch+
-  #define BUTT_DOWN   0x4E5BA3AD    //ch-
-  #define BUTT_LEFT   0x517068AD    //prew
-  #define BUTT_RIGHT  0x1B92DDAD    //next
-  #define BUTT_OK     0xE51CA6AD    //ch
-  #define BUTT_1      0x18319BAD    
-  #define BUTT_2      0xF39EEBAD
-  #define BUTT_3      0x4AABDFAD
-  #define BUTT_4      0xE25410AD
-  #define BUTT_5      0x297C76AD
-  #define BUTT_6      0x14CE54AD
-  #define BUTT_7      0xAF3F1BAD
-  #define BUTT_8      0xC089F6AD
-  #define BUTT_9      0x38379AD
-  #define BUTT_0      0x68E456AD
-  #define BUTT_STAR   0xAC2A56AD  // play
-  #define BUTT_HASH   0xDF3F4BAD   // eq
-
+  #if  (REMOTE_KEY == 1)
+    #define BUTT_STAR   0x1B92DDAD   // 
+    #define BUTT_HASH   0x187E18AD   //start/stop
+    #define BUTT_UP     0x65CF91AD    //queck
+    #define BUTT_DOWN   0x2FF206AD    //slow
+    #define BUTT_LEFT   0x72EB89AD    //auto  
+    #define BUTT_RIGHT  0xA8C914AD    //flash 
+    #define BUTT_OK     0x57997BAD    //flade3
+    #define BUTT_1      0x18319BAD    //diy1   
+    #define BUTT_2      0x151CD6AD    //diy2
+    #define BUTT_3      0xABDDD9AD    //diy3
+    #define BUTT_4      0xE25410AD    //diy4
+    #define BUTT_8      0xDF3F4BAD    //diy5
+    #define BUTT_9      0x76004EAD     //diy6
+    #define BUTT_0      0x5484B6AD    ///flade7
+    #define BUTT_5      0xE207E1AD    //мой режим
+    #define BUTT_7      0xAF3F1BAD    //не юзаю
+    #define BUTT_6      0x14CE54AD      //не юзаю
+    #define BUTT_JUMPUP 0xC3ED3DAD    //jump 3
+    #define BUTT_JUMPDW 0xC0D878AD    //jump 7
+    #define BUTT_HIGHT_UP   0xB6FFA1AD
+    #define BUTT_HIGHT_DOWN 0xB3EADCAD
+    #define BUTT_RED    0x812216AD
+    #define BUTT_RED1   0x62BB43AD
+    #define BUTT_RED2   0x2CDDB8AD
+    #define BUTT_RED3   0x297C76AD
+    #define BUTT_RED4   0xF39EEBAD
+    #define BUTT_GREEN  0x7E0D51AD
+    #define BUTT_GREEN1 0x5FA67EAD
+    #define BUTT_GREEN2 0x29C8F3AD
+    #define BUTT_GREEN3 0x2667B1AD
+    #define BUTT_GREEN4 0xF08A26AD
+    #define BUTT_BLUE   0x4E5BA3AD
+    #define BUTT_BLUE1  0x6CC276AD
+    #define BUTT_BLUE2  0xA2A001AD
+    #define BUTT_BLUE3  0xBD28B4AD
+    #define BUTT_BLUE4  0x874B29AD
+    #define BUTT_WHITE  0x517068AD
+    #define BUTT_WHITE1 0x6FD73BAD
+    #define BUTT_WHITE2 0xA5B4C6AD
+    #define BUTT_WHITE3 0xBA13EFAD
+    #define BUTT_WHITE4 0x843664AD
+    #endif
+  #if  (REMOTE_KEY == 0)   //малый пульт
+    #define BUTT_UP     0xE207E1AD    //ch+
+    #define BUTT_DOWN   0x4E5BA3AD    //ch-
+    #define BUTT_LEFT   0x517068AD    //prew
+    #define BUTT_RIGHT  0x1B92DDAD    //next
+    #define BUTT_OK     0xE51CA6AD    //ch
+    #define BUTT_PLUS   0xD22353AD
+    #define BUTT_MINUS  0x5484B6AD
+    #define BUTT_0      
+    #define BUTT_100    0xF08A26AD
+    #define BUTT_200    0x151CD6AD
+    #define BUTT_1      0x18319BAD    
+    #define BUTT_2      0xF39EEBAD
+    #define BUTT_3      0x4AABDFAD
+    #define BUTT_4      0xE25410AD
+    #define BUTT_5      0x297C76AD
+    #define BUTT_6      0x14CE54AD
+    #define BUTT_7      0xAF3F1BAD
+    #define BUTT_8      0xC089F6AD
+    #define BUTT_9      0x38379AD
+    #define BUTT_0      0x68E456AD
+    #define BUTT_STAR   0xAC2A56AD  // play
+    #define BUTT_HASH   0xDF3F4BAD   // eq
+    #endif
 
  // ------------------------------ ДЛЯ РАЗРАБОТЧИКОВ --------------------------------
   #define MODE_AMOUNT 9      // количество режимов
@@ -226,18 +277,17 @@
   #define LCDdebug ""
   #endif
  //enum 
-  enum MODE_LIGHT_BEDROM {
-    OFF_LIGHT,  START_LIGHT,  NORMAL_LIGHT,  BLACKOUT_LIGHT,
-    NIGHT_LIGHT,  SUNRISE_LIGHT, COLOR_MUSIC, SUNSET_LIGHT, NO_ACTION,
+  enum MODE_LIGHT_BEDROM {      //нулевой не отправляет по сериал, NULL_LIGHT как заглушка
+    NULL_LIGHT, OFF_LIGHT,  START_LIGHT,  NORMAL_LIGHT,  BLACKOUT_LIGHT,
+    NIGHT_LIGHT,  SUNRISE_LIGHT, COLOR_MUSIC, SUNSET_LIGHT, 
   } mode_light_bedroom(SUNRISE_LIGHT);
 
 void setup() {
   Serial.begin(9600);
-  SerialMega.begin(4800);
-  PRINT(" start", " ok");
+  SerialMega.begin(9600);
  //---------лента 2811------- 
-  FastLED.addLeds<WS2811, LED_PIN, GRB>(leds, LED_NUM).setCorrection( TypicalLEDStrip );
-  FastLED.addLeds<WS2811, LED_PIN_CENTR, GRB>(leds_centr, LED_NUM_CENTR).setCorrection( TypicalLEDStrip );
+  FastLED.addLeds<WS2811, LED_PIN, BRG>(leds, LED_NUM).setCorrection( TypicalLEDStrip );
+  FastLED.addLeds<WS2811, LED_PIN_CENTR, BRG>(leds_centr, LED_NUM_CENTR).setCorrection( TypicalLEDStrip );
   FastLED.setBrightness(Brightness);
   FastLED.clear();
   FastLED.show();   
@@ -305,18 +355,21 @@ void setup() {
   Serial.print(F("HUE_STEP = ")); Serial.println(HUE_STEP);
   Serial.print(F("EMPTY_BRIGHT = ")); Serial.println(EMPTY_BRIGHT);
   Serial.print(F("ONstate = ")); Serial.println(ONstate);
+  Serial.print(F("mode_light_bedroom = ")); Serial.println(mode_light_bedroom);
+  Serial.print(F("Brightness = ")); Serial.println(Brightness);
  #endif
  }
 
-void loop() {
+void loop() {  
   remoteTick();     // опрос ИК пульта
   mainLoop();       // главный цикл обработки и отрисовки
   eepromTick();     // проверка не пора ли сохранить настройки
   serialRead();     // связь с мегой
-}
+ }
 
 void mainLoop() {
   // главный цикл отрисовки
+  if(ONstate) {
     if (millis() - main_timer > MAIN_LOOP) {
       // сбрасываем значения
       RsoundLevel = 0;
@@ -425,10 +478,8 @@ void mainLoop() {
         }
         animation();
       }
-      //мой обычный режим
-      if (this_mode == 4 || this_mode == 5)   animation();
-      if (this_mode == 6) animation();
-
+      //4 заливка цветом
+      if (this_mode == 4 || this_mode == 5 || this_mode == 6)   animation();
       if (!IRLremote.receiving())    // если на ИК приёмник не приходит сигнал (без этого НЕ РАБОТАЕТ!)
         FastLED.show();         // отправить значения на ленту
 
@@ -436,8 +487,8 @@ void mainLoop() {
         FastLED.clear();          // очистить массив пикселей
       main_timer = millis();    // сбросить таймер
     }
-}
-
+  }
+ }
 void animation() {
   // согласно режиму
   switch (this_mode) {
@@ -504,34 +555,17 @@ void animation() {
       static bool flag_one_start = true; 
       switch (mode_light_bedroom) {         
       case (NORMAL_LIGHT) :
-        static bool flagColor = false;
-        static bool flagSaturation = false;
-        {PERIOD (100) {
-          Brightness = 255;          
-          if ( random_color != light_color_now)random_color ++;
-          else flagColor = true;
-          if ( random_saturation < light_saturation_now) random_saturation++;
-          //else if ( random_saturation > light_saturation_now) random_saturation--;
-          else flagSaturation = true;
-          for( int i = 0; i < LED_NUM_CENTR; i++) 
-            leds_centr[i] = CHSV(random_color, random_saturation, 255); 
-          for( int i = 0; i < LED_NUM; i++) 
-            leds[i] = CHSV(random_color, random_saturation, 255); 
-          if(flagColor && flagSaturation)  
-            mode_light_bedroom = NO_ACTION;
-        }}   
+        full_paint (light_color_now, light_saturation_now, light_hue_now);
         break;
       case (START_LIGHT) :
         if (flag_one_start)  {          //задержка на включение света
           flag_one_start = false;
           timer_waiting = millis(); 
-          randomSeed( millis());  random_color = random(255);             //рандом цвета заполнения ленты
-          randomSeed( micros());  random_saturation = random(100 , 255);  //рандом насыщенности заполнения ленты
           Brightness = 255;
           FastLED.setBrightness(Brightness);
         }
         if (millis() - timer_waiting >= 1000) 
-          paint_light (random_color, random_saturation, 255, NORMAL_LIGHT);
+          start_paint (light_color_now, light_saturation_now, 255, NORMAL_LIGHT);
         break;
       
       case (SUNRISE_LIGHT) :
@@ -570,7 +604,7 @@ void animation() {
         break;
         
       case (SUNSET_LIGHT) :
-        paint_light (10, 200, 200, BLACKOUT_LIGHT); 
+        start_paint (10, 200, 200, BLACKOUT_LIGHT); 
         break;
         
       case (BLACKOUT_LIGHT) :   //плавное затемнение
@@ -596,15 +630,9 @@ void animation() {
       case (OFF_LIGHT) :        //полное выключение света
         ONstate = false;
         flag_one_start = true;
-        Brightness = 0;
-        FastLED.setBrightness(Brightness);
         FastLED.clear();    
         EEPROM.updateByte(65, mode_light_bedroom); 
-        EEPROM.updateByte(66, Brightness);  
-        mode_light_bedroom = NO_ACTION;
         break; 
-      case (NO_ACTION) :
-        break;
       default :
         break;
       }
@@ -681,55 +709,43 @@ void animation() {
       }
       break;
   }
-}
-void serialRead() {
+ }
+//Serial 
+ void serialRead() {
   if (Mega_serial.available()) {    // если данные получены
   //  /^a^a^234^...^crc;   формат принимаемой строки 
-    PRINT("new message ", Mega_serial.buf);    
-
   //обработка crc
     byte length = strlen(Mega_serial.buf);
     byte crc_mega = crc8_bytes((byte*)&Mega_serial, length-1);  //расчёт crc входящего сообщения без последнего байта
     byte crc_esp = (byte)(Mega_serial.buf[length-1]);   
+    if(crc_mega != crc_esp) 
     {
-      //static byte fail = 0;
-      if(crc_mega != crc_esp) 
-      {
-        //if(fail < 15)           //запрос на повторную отправку 
-        {
-          serialWrite ("*");   
-          //fail++;
-          return;
-        }
-        // else                    //останавливаем попытки  
-        // {
-        //   serialWrite("#");  //fail
-        //   PRINT( "fail", fail); 
-        //   fail = 0;
-        //   return;
-        // }
-      } 
-      // else
-      // {
-      //   fail = 0;
-      //   PRINT( "OK" , ""); 
-      // }
-    }
+      serialWrite ("*");   
+      return;
+    }  
+
   //обработка сообщения
     char command1 = Mega_serial.buf[0]; 
-    char command2 = Mega_serial.buf[2];
-    byte am = Mrga_parser.split();           //разделяeт строку на подстроки, заменяя разделители на NULL
-    switch(command1)
+      Serial.print("message send nano = "); 
+      Serial.print(Mega_serial.buf[0]);
+      Serial.print(" "); 
+      Serial.println((byte)Mega_serial.buf[2]);
+    byte am = Mega_parser.split();           //разделяeт строку на подстроки, заменяя разделители на NULL
+    switch (command1)
     {
       case('a'):          //mode_light_bedroom
         mode_light_bedroom = (byte)Mega_serial.buf[2];
         this_mode = 4;
-        eeprom_flag = false;
+        ONstate = true;
+        break;
+      default:
+        break;  
     }
+    updateEEPROM();
+  }
  }
-}
 
-void serialWrite (const char* mes) {
+ void serialWrite (const char* mes) {
     SerialMega.write(mes, strlen(mes));
  }
 // функция для расчёта crc
@@ -744,54 +760,101 @@ void serialWrite (const char* mes) {
   }
   return crc;
  }
-void HIGHS() {
-  for (int i = 0; i < LED_NUM; i++) leds[i] = CHSV(HIGH_COLOR, 255, thisBright[2]);
+//EEPROM
+ void updateEEPROM() {
+  EEPROM.updateByte(1, this_mode);
+  EEPROM.updateByte(2, freq_strobe_mode);
+  EEPROM.updateByte(3, light_mode);
+  EEPROM.updateInt(4, RAINBOW_STEP);
+  EEPROM.updateFloat(8, MAX_COEF_FREQ);
+  EEPROM.updateInt(12, STROBE_PERIOD);
+  EEPROM.updateInt(16, LIGHT_SAT);
+  EEPROM.updateFloat(20, RAINBOW_STEP_2);
+  EEPROM.updateInt(24, HUE_START);
+  EEPROM.updateFloat(28, SMOOTH);
+  EEPROM.updateFloat(32, SMOOTH_FREQ);
+  EEPROM.updateInt(36, STROBE_SMOOTH);
+  EEPROM.updateInt(40, LIGHT_COLOR);
+  EEPROM.updateInt(44, COLOR_SPEED);
+  EEPROM.updateInt(48, RAINBOW_PERIOD);
+  EEPROM.updateInt(52, RUNNING_SPEED);
+  EEPROM.updateInt(56, HUE_STEP);
+  EEPROM.updateInt(60, EMPTY_BRIGHT);
+  if (KEEP_STATE) EEPROM.updateByte(64, ONstate);
+  EEPROM.updateByte(65, mode_light_bedroom); 
+  EEPROM.updateByte(66, Brightness);
  }
-void MIDS() {
-  for (int i = 0; i < LED_NUM; i++) leds[i] = CHSV(MID_COLOR, 255, thisBright[1]);
+ void readEEPROM() {
+  this_mode = EEPROM.readByte(1);
+  freq_strobe_mode = EEPROM.readByte(2);
+  light_mode = EEPROM.readByte(3);
+  RAINBOW_STEP = EEPROM.readInt(4);
+  MAX_COEF_FREQ = EEPROM.readFloat(8);
+  STROBE_PERIOD = EEPROM.readInt(12);
+  LIGHT_SAT = EEPROM.readInt(16);
+  RAINBOW_STEP_2 = EEPROM.readFloat(20);
+  HUE_START = EEPROM.readInt(24);
+  SMOOTH = EEPROM.readFloat(28);
+  SMOOTH_FREQ = EEPROM.readFloat(32);
+  STROBE_SMOOTH = EEPROM.readInt(36);
+  LIGHT_COLOR = EEPROM.readInt(40);
+  COLOR_SPEED = EEPROM.readInt(44);
+  RAINBOW_PERIOD = EEPROM.readInt(48);
+  RUNNING_SPEED = EEPROM.readInt(52);
+  HUE_STEP = EEPROM.readInt(56);
+  EMPTY_BRIGHT = EEPROM.readInt(60);
+  if (KEEP_STATE) ONstate = EEPROM.readByte(64);
+  mode_light_bedroom = EEPROM.readByte(65);
+  Brightness = EEPROM.readByte(66);
  }
-void LOWS() {
-  for (int i = 0; i < LED_NUM; i++) leds[i] = CHSV(LOW_COLOR, 255, thisBright[0]);
+ void eepromTick() {
+  if (eeprom_flag)
+    if (millis() - eeprom_timer > 5000) {  // 30 секунд после последнего нажатия с пульта
+      eeprom_flag = false;
+      eeprom_timer = millis();
+      updateEEPROM();
+    }
  }
-void SILENCE() {
-  for (int i = 0; i < LED_NUM; i++) leds[i] = CHSV(EMPTY_COLOR, 255, EMPTY_BRIGHT);
+//заполнение цветом  
+ void full_paint (const int color , const int saturation, const int hue ) {
+  for (int i = 0; i < LED_NUM; i++)         leds[i].setRGB(color, saturation, hue);
+  for (int i = 0; i < LED_NUM_CENTR; i++)   leds_centr[i].setRGB(color, saturation, hue);
+
  }
-//заполнение цветом
- void paint_light (const int &color, const int &saturation, const int &hue, uint8_t next ) {
+ void start_paint (const int color, const int saturation, const int hue, uint8_t next ) {
    static uint8_t LED_LEFT =  LED_NUM / 2; 
    static uint8_t LED_RIGHT =  LED_NUM / 2;
    static uint8_t LED_CENTR;
    {PERIOD (300) { 
     if( LED_RIGHT < LED_NUM) {
-      leds[LED_RIGHT++]= CHSV( color, saturation ,hue); 
-      leds[LED_LEFT--] = CHSV( color, saturation ,hue); 
+      leds[LED_RIGHT++].setRGB( color, saturation ,hue); 
+      leds[LED_LEFT--].setRGB( color, saturation ,hue); 
     }
     if (LED_RIGHT >= 79) {
-      leds_centr[LED_CENTR++] = CHSV( color, saturation ,hue);   
+      leds_centr[LED_CENTR++].setRGB( color, saturation ,hue);   
     }
-    }}
+   }}
    if (LED_CENTR == LED_NUM_CENTR)  {
     mode_light_bedroom = next;
     LED_LEFT =  LED_NUM / 2;
     LED_RIGHT =  LED_NUM / 2;
     LED_CENTR = 0;
    }
- }
-
+  } 
 // вспомогательная функция, изменяет величину value на шаг incr в пределах minimum.. maximum
-int smartIncr(int value, int incr_step, int mininmum, int maximum) {
+ int smartIncr(int value, int incr_step, int mininmum, int maximum) {
   int val_buf = value + incr_step;
   val_buf = constrain(val_buf, mininmum, maximum);
   return val_buf;
-}
+  }
 
-float smartIncrFloat(float value, float incr_step, float mininmum, float maximum) {
+ float smartIncrFloat(float value, float incr_step, float mininmum, float maximum) {
   float val_buf = value + incr_step;
   val_buf = constrain(val_buf, mininmum, maximum);
   return val_buf;
-}
-
-void remoteTick() {
+  }
+//Ir remote
+ void remoteTick() {
   if (IRLremote.available())  {
     auto data = IRLremote.read();
     IRdata = data.command;
@@ -801,7 +864,86 @@ void remoteTick() {
     eeprom_timer = millis();
     eeprom_flag = true;
     switch (IRdata) {
-      // режимы
+    //Brightness
+      case BUTT_HIGHT_UP : 
+        if(Brightness <= 245)
+          Brightness +=10;
+        FastLED.setBrightness(Brightness);
+        break;
+      case BUTT_HIGHT_DOWN : 
+        if(Brightness >= 10)
+          Brightness -=10;
+        FastLED.setBrightness(Brightness);
+        break;  
+    //цвета
+     //1 столбец
+      case BUTT_RED : //красный
+        light_color_now = 255; 
+        light_saturation_now = 0;
+        light_hue_now = 0;
+        this_mode = 4;
+        mode_light_bedroom = NORMAL_LIGHT;
+        break;  
+      case BUTT_RED1 : //темн оранжевый FireBrick
+        light_color_now = 178; 
+        light_saturation_now = 34;
+        light_hue_now = 34;
+        this_mode = 4;
+        mode_light_bedroom = NORMAL_LIGHT;
+        break;  
+      case BUTT_RED2 : //оранжевый
+        light_color_now = 255; 
+        light_saturation_now = 69;
+        light_hue_now = 0;
+        this_mode = 4;
+        mode_light_bedroom = NORMAL_LIGHT;
+        break;
+      case BUTT_RED3 : //светл оранжевый
+        light_color_now = 255; 
+        light_saturation_now = 160;
+        light_hue_now = 122;
+        this_mode = 4;
+        mode_light_bedroom = NORMAL_LIGHT;
+        break;  
+     //2 столбец
+      case BUTT_GREEN : 
+        light_color_now = 0; 
+        light_saturation_now = 100;
+        light_hue_now = 0;
+        this_mode = 4;
+        mode_light_bedroom = NORMAL_LIGHT;
+        break;
+      case BUTT_GREEN1 : 
+        light_color_now = 0; 
+        light_saturation_now = 255;
+        light_hue_now = 0;
+        this_mode = 4;
+        mode_light_bedroom = NORMAL_LIGHT;
+        break;  
+     //3 столбец      
+      case BUTT_WHITE : 
+        light_color_now = 255;
+        light_saturation_now = 255;
+        light_hue_now = 255;
+        this_mode = 4;
+        mode_light_bedroom = NORMAL_LIGHT;
+        break; 
+     //4 столбец      
+      case BUTT_BLUE : 
+        light_color_now = 0;
+        light_saturation_now = 0;
+        light_hue_now = 128;
+        this_mode = 4;
+        mode_light_bedroom = NORMAL_LIGHT;
+        break;    
+      case BUTT_BLUE1 : 
+        light_color_now = 0;
+        light_saturation_now = 0;
+        light_hue_now = 255;
+        this_mode = 4;
+        mode_light_bedroom = NORMAL_LIGHT;
+        break; 
+    // режимы
       case BUTT_1: this_mode = 0;
         break;
       case BUTT_2: this_mode = 1;
@@ -972,115 +1114,9 @@ void remoteTick() {
     }
     ir_flag = false;
   }
-}
+ }
 
-void autoLowPass() {
-  // для режима VU
-  delay(10);                                // ждём инициализации АЦП
-  int thisMax = 0;                          // максимум
-  int thisLevel;
-  for (byte i = 0; i < 200; i++) {
-    thisLevel = analogRead(SOUND_R);        // делаем 200 измерений
-    if (thisLevel > thisMax)                // ищем максимумы
-      thisMax = thisLevel;                  // запоминаем
-    delay(4);                               // ждём 4мс
-  }
-  LOW_PASS = thisMax + LOW_PASS_ADD;        // нижний порог как максимум тишины + некая величина
 
-  // для режима спектра
-  thisMax = 0;
-  for (byte i = 0; i < 100; i++) {          // делаем 100 измерений
-    analyzeAudio();                         // разбить в спектр
-    for (byte j = 2; j < 32; j++) {         // первые 2 канала - хлам
-      thisLevel = fht_log_out[j];
-      if (thisLevel > thisMax)              // ищем максимумы
-        thisMax = thisLevel;                // запоминаем
-    }
-    delay(4);                               // ждём 4мс
-  }
-  SPEKTR_LOW_PASS = thisMax + LOW_PASS_FREQ_ADD;  // нижний порог как максимум тишины
-  if (EEPROM_LOW_PASS && !AUTO_LOW_PASS) {
-    EEPROM.updateInt(70, LOW_PASS);
-    EEPROM.updateInt(72, SPEKTR_LOW_PASS);
-  }
-}
-
-void analyzeAudio() {
-  for (int i = 0 ; i < FHT_N ; i++) {
-    int sample = analogRead(SOUND_R_FREQ);
-    fht_input[i] = sample; // put real data into bins
-  }
-  fht_window();  // window the data for better frequency response
-  fht_reorder(); // reorder the data before doing the fht
-  fht_run();     // process the data in the fht
-  fht_mag_log(); // take the output of the fht
-}
-
-void fullLowPass() {
-  digitalWrite(MLED_PIN, MLED_ON);   // включить светодиод
-  FastLED.setBrightness(0); // погасить ленту
-  FastLED.clear();          // очистить массив пикселей
-  FastLED.show();           // отправить значения на ленту
-  delay(500);               // подождать чутка
-  autoLowPass();            // измерить шумы
-  delay(500);               // подождать
-  FastLED.setBrightness(Brightness);  // вернуть яркость
-  digitalWrite(MLED_PIN, !MLED_ON);    // выключить светодиод
-}
-void updateEEPROM() {
-  EEPROM.updateByte(1, this_mode);
-  EEPROM.updateByte(2, freq_strobe_mode);
-  EEPROM.updateByte(3, light_mode);
-  EEPROM.updateInt(4, RAINBOW_STEP);
-  EEPROM.updateFloat(8, MAX_COEF_FREQ);
-  EEPROM.updateInt(12, STROBE_PERIOD);
-  EEPROM.updateInt(16, LIGHT_SAT);
-  EEPROM.updateFloat(20, RAINBOW_STEP_2);
-  EEPROM.updateInt(24, HUE_START);
-  EEPROM.updateFloat(28, SMOOTH);
-  EEPROM.updateFloat(32, SMOOTH_FREQ);
-  EEPROM.updateInt(36, STROBE_SMOOTH);
-  EEPROM.updateInt(40, LIGHT_COLOR);
-  EEPROM.updateInt(44, COLOR_SPEED);
-  EEPROM.updateInt(48, RAINBOW_PERIOD);
-  EEPROM.updateInt(52, RUNNING_SPEED);
-  EEPROM.updateInt(56, HUE_STEP);
-  EEPROM.updateInt(60, EMPTY_BRIGHT);
-  if (KEEP_STATE) EEPROM.updateByte(64, ONstate);
-  EEPROM.updateByte(65, mode_light_bedroom); 
-  EEPROM.updateByte(66, Brightness); 
-}
-void readEEPROM() {
-  this_mode = EEPROM.readByte(1);
-  freq_strobe_mode = EEPROM.readByte(2);
-  light_mode = EEPROM.readByte(3);
-  RAINBOW_STEP = EEPROM.readInt(4);
-  MAX_COEF_FREQ = EEPROM.readFloat(8);
-  STROBE_PERIOD = EEPROM.readInt(12);
-  LIGHT_SAT = EEPROM.readInt(16);
-  RAINBOW_STEP_2 = EEPROM.readFloat(20);
-  HUE_START = EEPROM.readInt(24);
-  SMOOTH = EEPROM.readFloat(28);
-  SMOOTH_FREQ = EEPROM.readFloat(32);
-  STROBE_SMOOTH = EEPROM.readInt(36);
-  LIGHT_COLOR = EEPROM.readInt(40);
-  COLOR_SPEED = EEPROM.readInt(44);
-  RAINBOW_PERIOD = EEPROM.readInt(48);
-  RUNNING_SPEED = EEPROM.readInt(52);
-  HUE_STEP = EEPROM.readInt(56);
-  EMPTY_BRIGHT = EEPROM.readInt(60);
-  if (KEEP_STATE) ONstate = EEPROM.readByte(64);
-  mode_light_bedroom = EEPROM.readByte(65);
-  Brightness = EEPROM.readByte(66);
-}
-void eepromTick() {
-  if (eeprom_flag)
-    if (millis() - eeprom_timer > 30000) {  // 30 секунд после последнего нажатия с пульта
-      eeprom_flag = false;
-      eeprom_timer = millis();
-      updateEEPROM();
-    }
-}
 // --------разные режимы подсветки-------------
  void Color() {}
 
@@ -1165,3 +1201,56 @@ void eepromTick() {
   //}
  }
 //
+ void autoLowPass() {
+  // для режима VU
+  delay(10);                                // ждём инициализации АЦП
+  int thisMax = 0;                          // максимум
+  int thisLevel;
+  for (byte i = 0; i < 200; i++) {
+    thisLevel = analogRead(SOUND_R);        // делаем 200 измерений
+    if (thisLevel > thisMax)                // ищем максимумы
+      thisMax = thisLevel;                  // запоминаем
+    delay(4);                               // ждём 4мс
+  }
+  LOW_PASS = thisMax + LOW_PASS_ADD;        // нижний порог как максимум тишины + некая величина
+
+  // для режима спектра
+  thisMax = 0;
+  for (byte i = 0; i < 100; i++) {          // делаем 100 измерений
+    analyzeAudio();                         // разбить в спектр
+    for (byte j = 2; j < 32; j++) {         // первые 2 канала - хлам
+      thisLevel = fht_log_out[j];
+      if (thisLevel > thisMax)              // ищем максимумы
+        thisMax = thisLevel;                // запоминаем
+    }
+    delay(4);                               // ждём 4мс
+  }
+  SPEKTR_LOW_PASS = thisMax + LOW_PASS_FREQ_ADD;  // нижний порог как максимум тишины
+  if (EEPROM_LOW_PASS && !AUTO_LOW_PASS) {
+    EEPROM.updateInt(70, LOW_PASS);
+    EEPROM.updateInt(72, SPEKTR_LOW_PASS);
+  }
+ }
+
+ void analyzeAudio() {
+  for (int i = 0 ; i < FHT_N ; i++) {
+    int sample = analogRead(SOUND_R_FREQ);
+    fht_input[i] = sample; // put real data into bins
+  }
+  fht_window();  // window the data for better frequency response
+  fht_reorder(); // reorder the data before doing the fht
+  fht_run();     // process the data in the fht
+  fht_mag_log(); // take the output of the fht
+ }
+
+ void fullLowPass() {
+  digitalWrite(MLED_PIN, MLED_ON);   // включить светодиод
+  FastLED.setBrightness(0); // погасить ленту
+  FastLED.clear();          // очистить массив пикселей
+  FastLED.show();           // отправить значения на ленту
+  delay(500);               // подождать чутка
+  autoLowPass();            // измерить шумы
+  delay(500);               // подождать
+  FastLED.setBrightness(Brightness);  // вернуть яркость
+  digitalWrite(MLED_PIN, !MLED_ON);    // выключить светодиод
+ }

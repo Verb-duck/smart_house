@@ -2,7 +2,7 @@
  void serialReadEsp() {
   if (ESP_serial.available()) {    // если данные получены
   //  /^a^a^234^...^crc;   формат принимаемой строки 
-    PRINT("new message ", ESP_serial.buf);    
+    //PRINT("new message ", ESP_serial.buf);    
 
   //обработка crc
     byte length = strlen(ESP_serial.buf);
@@ -16,13 +16,13 @@
         {
           serialWriteEsp ("*");   
           fail++;
-          PRINT( "return", fail);      
+          //PRINT( "return", fail);      
           return;
         }
         else                    //останавливаем попытки  
         {
           serialWriteEsp("#");  //fail
-          PRINT( "fail", fail); 
+          //PRINT( "fail", fail); 
           fail = 0;
           return;
         }
@@ -30,7 +30,7 @@
       else
       {
         fail = 0;
-        PRINT( "OK" , ""); 
+        //PRINT( "OK" , ""); 
       }
     }
   //обработка сообщения
@@ -148,7 +148,10 @@
     outBuffNano[lengthOutMessageNano++] = crc;
     outBuffNano[lengthOutMessageNano++] = ';';
     Serial2.write(outBuffNano, lengthOutMessageNano);     //send messege  
-    PRINT( "message nano", outBuffNano); 
+      Serial.print("message send nano = "); 
+      Serial.print(outBuffNano[0]);
+      Serial.print(" "); 
+      Serial.println((byte)outBuffNano[2]);
   }
  void serialReadNano() {
    if (Nano_serial.available()) 
