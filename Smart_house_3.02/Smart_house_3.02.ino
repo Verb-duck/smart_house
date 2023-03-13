@@ -21,7 +21,7 @@
 #define DC18B20_PIN 24      //пин для термометров
 #define LED_PIN 27          //лента контур
 #define LED_PIN_CENTR 28    //лента центр
-//#define MLED_PIN 34         // пин светодиода режимов цветомузыки. событий.
+#define LED_PIN_STATION 45  // пин светодиода событий.
 #define PIR_SENSOR 47       //датчик движения ик
 #define STIK_KEY_PIN 42     //btn joostic
 #define MIC_SENSOR 15       //датчик звука

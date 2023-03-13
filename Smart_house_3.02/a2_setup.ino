@@ -9,7 +9,8 @@ void setup() {
 //---------пины--------
   pinMode(PHOTO_SENSOR, INPUT); 
   pinMode(PIR_SENSOR, INPUT);
-  pinMode(MIC_SENSOR, INPUT);   
+  pinMode(MIC_SENSOR, INPUT); 
+  pinMode(LED_PIN_STATION, OUTPUT);   
 //---------дисплей---------
   LCD.init();            // инициализация LCD дисплея
   LCD.clear();

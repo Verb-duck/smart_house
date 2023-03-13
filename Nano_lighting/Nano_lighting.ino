@@ -6,7 +6,7 @@
   #define KEEP_SETTINGS 1     // хранить ВСЕ настройки в энергонезависимой памяти
   #define KEEP_STATE 1		    // сохранять в памяти состояние вкл/выкл системы (с пульта)
   #define RESET_SETTINGS 0    // сброс настроек в EEPROM памяти (поставить 1, прошиться, поставить обратно 0, прошиться. Всё)
-  #define SETTINGS_LOG 1      // вывод всех настроек из EEPROM в порт при запуске
+  #define SETTINGS_LOG 0      // вывод всех настроек из EEPROM в порт при запуске
   #define REMOTE_KEY 1
 
  // ----- настройки ленты
@@ -29,9 +29,9 @@
   byte Brightness = 10;      // яркость по умолчанию (0 - 255)
   uint8_t random_color;
   uint8_t random_saturation;
-  uint8_t light_color_now = 30;
-  uint8_t light_saturation_now = 180;
-  uint8_t light_hue_now = 255;
+  uint8_t red_color_now = 30;
+  uint8_t green_saturation_now = 180;
+  uint8_t blue_color_now = 255;
   
   uint8_t gHue = 0; // rotating "base color" used by many of the patterns
   uint8_t sped_led_show = 50;
@@ -56,8 +56,7 @@
   #define SOUND_R A1         // аналоговый пин вход аудио, правый канал
   #define SOUND_L A2         // аналоговый пин вход аудио, левый канал
   #define SOUND_R_FREQ A3    // аналоговый пин вход аудио для режима с частотами (через кондер)
-  #define BTN_PIN 3          // кнопка переключения режимов (PIN --- КНОПКА --- GND)
-  #define MLED_PIN A5             // пин светодиода режимов
+  #define MLED_PIN A7             // пин светодиода режимов
   #define MLED_ON HIGH
   #define LED_PIN 4              // пин DI светодиодной ленты
   #define IR_PIN 3                // пин ИК приёмника
@@ -555,7 +554,7 @@ void animation() {
       static bool flag_one_start = true; 
       switch (mode_light_bedroom) {         
       case (NORMAL_LIGHT) :
-        full_paint (light_color_now, light_saturation_now, light_hue_now);
+        full_paint (red_color_now, green_saturation_now, blue_color_now);
         break;
       case (START_LIGHT) :
         if (flag_one_start)  {          //задержка на включение света
@@ -565,7 +564,7 @@ void animation() {
           FastLED.setBrightness(Brightness);
         }
         if (millis() - timer_waiting >= 1000) 
-          start_paint (light_color_now, light_saturation_now, 255, NORMAL_LIGHT);
+          start_paint (red_color_now, green_saturation_now, 255, NORMAL_LIGHT);
         break;
       
       case (SUNRISE_LIGHT) :
@@ -746,6 +745,7 @@ void animation() {
  }
 
  void serialWrite (const char* mes) {
+   outBuff
     SerialMega.write(mes, strlen(mes));
  }
 // функция для расчёта crc
@@ -854,6 +854,7 @@ void animation() {
   return val_buf;
   }
 //Ir remote
+ //void 
  void remoteTick() {
   if (IRLremote.available())  {
     auto data = IRLremote.read();
@@ -878,68 +879,68 @@ void animation() {
     //цвета
      //1 столбец
       case BUTT_RED : //красный
-        light_color_now = 255; 
-        light_saturation_now = 0;
-        light_hue_now = 0;
+        red_color_now = 255; 
+        green_saturation_now = 0;
+        blue_color_now = 0;
         this_mode = 4;
         mode_light_bedroom = NORMAL_LIGHT;
         break;  
       case BUTT_RED1 : //темн оранжевый FireBrick
-        light_color_now = 178; 
-        light_saturation_now = 34;
-        light_hue_now = 34;
+        red_color_now = 178; 
+        green_saturation_now = 34;
+        blue_color_now = 34;
         this_mode = 4;
         mode_light_bedroom = NORMAL_LIGHT;
         break;  
       case BUTT_RED2 : //оранжевый
-        light_color_now = 255; 
-        light_saturation_now = 69;
-        light_hue_now = 0;
+        red_color_now = 255; 
+        green_saturation_now = 69;
+        blue_color_now = 0;
         this_mode = 4;
         mode_light_bedroom = NORMAL_LIGHT;
         break;
       case BUTT_RED3 : //светл оранжевый
-        light_color_now = 255; 
-        light_saturation_now = 160;
-        light_hue_now = 122;
+        red_color_now = 255; 
+        green_saturation_now = 160;
+        blue_color_now = 122;
         this_mode = 4;
         mode_light_bedroom = NORMAL_LIGHT;
         break;  
      //2 столбец
       case BUTT_GREEN : 
-        light_color_now = 0; 
-        light_saturation_now = 100;
-        light_hue_now = 0;
+        red_color_now = 0; 
+        green_saturation_now = 100;
+        blue_color_now = 0;
         this_mode = 4;
         mode_light_bedroom = NORMAL_LIGHT;
         break;
       case BUTT_GREEN1 : 
-        light_color_now = 0; 
-        light_saturation_now = 255;
-        light_hue_now = 0;
+        red_color_now = 0; 
+        green_saturation_now = 255;
+        blue_color_now = 0;
         this_mode = 4;
         mode_light_bedroom = NORMAL_LIGHT;
         break;  
      //3 столбец      
       case BUTT_WHITE : 
-        light_color_now = 255;
-        light_saturation_now = 255;
-        light_hue_now = 255;
+        red_color_now = 255;
+        green_saturation_now = 255;
+        blue_color_now = 255;
         this_mode = 4;
         mode_light_bedroom = NORMAL_LIGHT;
         break; 
      //4 столбец      
       case BUTT_BLUE : 
-        light_color_now = 0;
-        light_saturation_now = 0;
-        light_hue_now = 128;
+        red_color_now = 0;
+        green_saturation_now = 0;
+        blue_color_now = 128;
         this_mode = 4;
         mode_light_bedroom = NORMAL_LIGHT;
         break;    
       case BUTT_BLUE1 : 
-        light_color_now = 0;
-        light_saturation_now = 0;
-        light_hue_now = 255;
+        red_color_now = 0;
+        green_saturation_now = 0;
+        blue_color_now = 255;
         this_mode = 4;
         mode_light_bedroom = NORMAL_LIGHT;
         break; 
