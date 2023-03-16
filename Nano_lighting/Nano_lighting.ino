@@ -30,7 +30,7 @@
   uint8_t random_color;
   uint8_t random_saturation;
   uint8_t red_color_now = 30;
-  uint8_t green_saturation_now = 180;
+  uint8_t green_color_now = 180;
   uint8_t blue_color_now = 255;
   
   uint8_t gHue = 0; // rotating "base color" used by many of the patterns
@@ -173,6 +173,13 @@
     #define BUTT_WHITE2 0xA5B4C6AD
     #define BUTT_WHITE3 0xBA13EFAD
     #define BUTT_WHITE4 0x843664AD
+    #define BUTT_RED_UP 0xD53818AD
+    #define BUTT_RED_DOWN 0x9F5A8DAD
+    #define BUTT_GREEN_UP 0xD22353AD
+    #define BUTT_GREEN_DOWN 0x9C45C8AD
+    #define BUTT_BLUE_UP 0x68E456AD
+    #define BUTT_BLUE_DOWN 0x3306CBAD
+
     #endif
   #if  (REMOTE_KEY == 0)   //малый пульт
     #define BUTT_UP     0xE207E1AD    //ch+
@@ -554,7 +561,7 @@ void animation() {
       static bool flag_one_start = true; 
       switch (mode_light_bedroom) {         
       case (NORMAL_LIGHT) :
-        full_paint (red_color_now, green_saturation_now, blue_color_now);
+        full_paint (red_color_now, green_color_now, blue_color_now);
         break;
       case (START_LIGHT) :
         if (flag_one_start)  {          //задержка на включение света
@@ -564,7 +571,7 @@ void animation() {
           FastLED.setBrightness(Brightness);
         }
         if (millis() - timer_waiting >= 1000) 
-          start_paint (red_color_now, green_saturation_now, 255, NORMAL_LIGHT);
+          start_paint (red_color_now, green_color_now, 255, NORMAL_LIGHT);
         break;
       
       case (SUNRISE_LIGHT) :
@@ -745,7 +752,7 @@ void animation() {
  }
 
  void serialWrite (const char* mes) {
-   outBuff
+   
     SerialMega.write(mes, strlen(mes));
  }
 // функция для расчёта crc
@@ -854,7 +861,16 @@ void animation() {
   return val_buf;
   }
 //Ir remote
- //void 
+ //доп функция 
+  void ColorLightingNow (byte red, byte green, byte blue)
+   {
+      red_color_now = red; 
+      green_color_now = green;
+      blue_color_now = blue;
+      ONstate = true;
+      this_mode = 4;
+      mode_light_bedroom = NORMAL_LIGHT;
+   }
  void remoteTick() {
   if (IRLremote.available())  {
     auto data = IRLremote.read();
@@ -867,6 +883,8 @@ void animation() {
     switch (IRdata) {
     //Brightness
       case BUTT_HIGHT_UP : 
+        if(Brightness == 0) 
+          Brightness = 5;
         if(Brightness <= 245)
           Brightness +=10;
         FastLED.setBrightness(Brightness);
@@ -874,75 +892,98 @@ void animation() {
       case BUTT_HIGHT_DOWN : 
         if(Brightness >= 10)
           Brightness -=10;
+          if(Brightness == 5)
+            Brightness = 0;
         FastLED.setBrightness(Brightness);
         break;  
     //цвета
-     //1 столбец
-      case BUTT_RED : //красный
-        red_color_now = 255; 
-        green_saturation_now = 0;
-        blue_color_now = 0;
-        this_mode = 4;
-        mode_light_bedroom = NORMAL_LIGHT;
-        break;  
-      case BUTT_RED1 : //темн оранжевый FireBrick
-        red_color_now = 178; 
-        green_saturation_now = 34;
-        blue_color_now = 34;
-        this_mode = 4;
-        mode_light_bedroom = NORMAL_LIGHT;
-        break;  
-      case BUTT_RED2 : //оранжевый
-        red_color_now = 255; 
-        green_saturation_now = 69;
-        blue_color_now = 0;
-        this_mode = 4;
-        mode_light_bedroom = NORMAL_LIGHT;
+      case BUTT_RED_UP :
+        red_color_now++;
+        Serial.print(red_color_now);Serial.print(" ");Serial.print(green_color_now);Serial.print(" ");Serial.println(blue_color_now);
         break;
-      case BUTT_RED3 : //светл оранжевый
-        red_color_now = 255; 
-        green_saturation_now = 160;
-        blue_color_now = 122;
-        this_mode = 4;
-        mode_light_bedroom = NORMAL_LIGHT;
+      case BUTT_RED_DOWN :
+        red_color_now--;
+        Serial.print(red_color_now);Serial.print(" ");Serial.print(green_color_now);Serial.print(" ");Serial.println(blue_color_now);
+        break;
+      case BUTT_GREEN_UP :
+        green_color_now++;
+        Serial.print(red_color_now);Serial.print(" ");Serial.print(green_color_now);Serial.print(" ");Serial.println(blue_color_now);
+        break;
+      case BUTT_GREEN_DOWN :
+        green_color_now--;
+        Serial.print(red_color_now);Serial.print(" ");Serial.print(green_color_now);Serial.print(" ");Serial.println(blue_color_now);
+        break;
+      case BUTT_BLUE_UP :
+        blue_color_now++;
+        Serial.print(red_color_now);Serial.print(" ");Serial.print(green_color_now);Serial.print(" ");Serial.println(blue_color_now);
+        break;
+      case BUTT_BLUE_DOWN :
+        blue_color_now--;
+        Serial.print(red_color_now);Serial.print(" ");Serial.print(green_color_now);Serial.print(" ");Serial.println(blue_color_now);
+        break;
+     //1 столбец
+      case BUTT_RED : 
+        ColorLightingNow(255,0,0);        
+        break;  
+      case BUTT_RED1 : 
+        ColorLightingNow(255, 10,0);
+        break;  
+      case BUTT_RED2 : 
+        ColorLightingNow(245,25,0);
+        break;
+      case BUTT_RED3 : 
+        ColorLightingNow(240,39,2);
+        break;  
+      case BUTT_RED4 : 
+        ColorLightingNow(255,255,0);
         break;  
      //2 столбец
       case BUTT_GREEN : 
-        red_color_now = 0; 
-        green_saturation_now = 100;
-        blue_color_now = 0;
-        this_mode = 4;
-        mode_light_bedroom = NORMAL_LIGHT;
+        ColorLightingNow(0,100,0);
         break;
       case BUTT_GREEN1 : 
-        red_color_now = 0; 
-        green_saturation_now = 255;
-        blue_color_now = 0;
-        this_mode = 4;
-        mode_light_bedroom = NORMAL_LIGHT;
+        ColorLightingNow(24, 105 , 15);
+        break;  
+      case BUTT_GREEN2 : 
+        ColorLightingNow(255, 255 , 15);
+        break;  
+      case BUTT_GREEN3 : 
+        ColorLightingNow(34, 98 , 225);
+        break;  
+      case BUTT_GREEN4 : 
+        ColorLightingNow(40, 110 , 200);
         break;  
      //3 столбец      
-      case BUTT_WHITE : 
-        red_color_now = 255;
-        green_saturation_now = 255;
-        blue_color_now = 255;
-        this_mode = 4;
-        mode_light_bedroom = NORMAL_LIGHT;
-        break; 
-     //4 столбец      
       case BUTT_BLUE : 
-        red_color_now = 0;
-        green_saturation_now = 0;
-        blue_color_now = 128;
-        this_mode = 4;
-        mode_light_bedroom = NORMAL_LIGHT;
+        ColorLightingNow(0,0,128);
         break;    
       case BUTT_BLUE1 : 
-        red_color_now = 0;
-        green_saturation_now = 0;
-        blue_color_now = 255;
-        this_mode = 4;
-        mode_light_bedroom = NORMAL_LIGHT;
+        ColorLightingNow(12,120,255);
+        break; 
+      case BUTT_BLUE2 : 
+        ColorLightingNow(255,0,10);
+        break;    
+      case BUTT_BLUE3 : 
+        ColorLightingNow(70,24,122);
+        break; 
+      case BUTT_BLUE4 : 
+        ColorLightingNow(255,100,255);
+        break; 
+     //4 столбец      
+      case BUTT_WHITE : 
+        ColorLightingNow(255,255,255);
+        break; 
+      case BUTT_WHITE1 : 
+        ColorLightingNow(216,30,24);
+        break; 
+      case BUTT_WHITE2 : 
+        ColorLightingNow(174,38,32);
+        break; 
+      case BUTT_WHITE3 : 
+        ColorLightingNow(40,103,39);
+        break; 
+      case BUTT_WHITE4 : 
+        ColorLightingNow(45,110,89);
         break; 
     // режимы
       case BUTT_1: this_mode = 0;
