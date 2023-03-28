@@ -3,6 +3,7 @@
 // ***************************** НАСТРОЙКИ *****************************
  // ----- настройки параметров
   #define DEBUGING  1
+  #define VERSION 1.02
   #define KEEP_SETTINGS 1     // хранить ВСЕ настройки в энергонезависимой памяти
   #define KEEP_STATE 1		    // сохранять в памяти состояние вкл/выкл системы (с пульта)
   #define RESET_SETTINGS 0    // сброс настроек в EEPROM памяти (поставить 1, прошиться, поставить обратно 0, прошиться. Всё)
@@ -290,6 +291,7 @@
 
 void setup() {
   Serial.begin(9600);
+  Serial.print("Version: "); Serial.println(VERSION);
   SerialMega.begin(9600);
  //---------лента 2811------- 
   FastLED.addLeds<WS2811, LED_PIN, BRG>(leds, LED_NUM).setCorrection( TypicalLEDStrip );
