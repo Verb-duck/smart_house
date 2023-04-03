@@ -47,13 +47,13 @@
   #include "AsyncStream.h"
   #include "GParser.h"
   //----esp-----
-  AsyncStream<40> ESP_serial(&Serial3,';',100); 
+  AsyncStream<20> ESP_serial(&Serial3,';',100); 
   GParser ESP_parser (ESP_serial.buf, '^');
   char outBuffEsp[20]; 
   bool repeatOutMessageEsp = false;
   byte lengthOutMessageEsp = 0; 
   //----nano-----
-  AsyncStream<40> Nano_serial(&Serial2,';',100); 
+  AsyncStream<20> Nano_serial(&Serial2,';',100); 
   GParser Nano_parser (Nano_serial.buf, '^');
   char outBuffNano[20];  
   bool repeatOutMessageNano = false;

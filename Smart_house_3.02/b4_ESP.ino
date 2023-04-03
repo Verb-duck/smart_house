@@ -6,33 +6,11 @@
 
   //обработка crc
     byte length = strlen(ESP_serial.buf);
-    byte crc_mega = crc8_bytes((byte*)&ESP_serial, length-1);  //расчёт crc входящего сообщения без последнего байта
-    byte crc_esp = (byte)(ESP_serial.buf[length-1]);   
-    {
-      static byte fail = 0;
-      if(crc_mega != crc_esp) 
-      {
-        if(fail < 15)           //запрос на повторную отправку 
-        {
-          serialWriteEsp ("*");   
-          fail++;
-          //PRINT( "return", fail);      
-          return;
-        }
-        else                    //останавливаем попытки  
-        {
-          serialWriteEsp("#");  //fail
-          //PRINT( "fail", fail); 
-          fail = 0;
-          return;
-        }
-      } 
-      else
-      {
-        fail = 0;
-        //PRINT( "OK" , ""); 
-      }
-    }
+    byte crc = crc8_bytes((byte*)&ESP_serial, length);  //расчёт crc входящего сообщения без последнего байта
+    if(crc != 0) 
+    {    
+      serialWriteEsp ("*");             
+    } 
   //обработка сообщения
     char command1 = ESP_serial.buf[2]; 
     char command2 = ESP_serial.buf[4];

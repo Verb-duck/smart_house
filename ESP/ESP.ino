@@ -19,14 +19,70 @@ FastBot bot("6130227271:AAHMnTK8NFMRnXyOqVDUXeMPnWHVo__k3nI");
 bool flagExpectMessage = false;     //expect message service
 int timeRestartExpect;
 char outBuff[20];             //buff save and send message
+byte command;
 bool repeatOutMessage = false;
 byte lengthOutMessage = 0;
 
-//-------serial-----
-  #include "AsyncStream.h"
-  AsyncStream<40> Mega_serial(&Serial,';',100); 
-  #include "GParser.h"
-  GParser Mega_parser(Mega_serial.buf, '^');
+#include "AsyncStream.h"
+#include "GParser.h"
+template<int Size> 
+  class UartSerial {
+    public:
+    UartSerial( Stream* serial) {
+      this -> serial = serial;
+      iStream = new AsyncStream<Size>(serial,';',50); 
+      parser = new GParser(iStream->buf, '^');
+    }
+    void read() {
+      if (iStream -> available()) 
+      {
+        byte length = strlen(iStream->buf);        
+        byte crc = crc8_bytes((byte*)iStream,length);
+        if(crc != 0)
+        {
+          write(0 , 0);
+          return;
+        } 
+        Serial.print((byte)iStream->buf[0]);
+        Serial.print(" "); 
+        Serial.println((byte)iStream->buf[2]);
+      }
+    }
+    void write(byte command, int value) {
+      lengthOut = 0;     
+      outBuff[lengthOut++] = command;
+      outBuff[lengthOut++] = '^';
+      outBuff[lengthOut++] = value;
+      outBuff[lengthOut++] = '^';
+      byte crc = crc8_bytes((byte*)&outBuff,lengthOut);
+      outBuff[lengthOut++] = crc;
+      outBuff[lengthOut++] = ';';
+      serial->write(outBuff, lengthOut);        //send messege  
+      Serial.print("message send = "); 
+      Serial.print(outBuff[0]);
+      Serial.print(" "); 
+      Serial.println((byte)outBuff[2]);
+    }
+    private:
+    Stream* serial;
+    AsyncStream<Size> *iStream;
+    GParser *parser;
+    char outBuff[Size];             //buff save and send message
+    byte lengthOut = 0;
+  // функция для расчёта crc
+    byte crc8_bytes(byte *buffer, byte size) {
+      byte crc = 0;
+      for (byte i = 0; i < size; i++) {
+        byte data = buffer[i];
+        for (int j = 8; j > 0; j--) {
+          crc = ((crc ^ data) & 1) ? (crc >> 1) ^ 0x8C : (crc >> 1);
+          data >>= 1;
+        }
+      }
+      return crc;
+    }
+  };
+  UartSerial<50> serial(&Serial);
 
 
 void setup() { 
@@ -85,18 +141,17 @@ void setup() {
  //updateTime mega
   outBuff[0] = '\0';
   strcat(outBuff, "/^b^a"); 
-  writeIntInBuff(timeClient.getHours());
-  writeIntInBuff(timeClient.getMinutes());
-  writeIntInBuff(timeClient.getSeconds());
-  sendMessageMega();
+  // writeIntInBuff(timeClient.getHours());
+  // writeIntInBuff(timeClient.getMinutes());
+  // writeIntInBuff(timeClient.getSeconds());
+  // sendMessageMega();
 }
 
 void loop() {
   ArduinoOTA.handle();
   timeClient.update();    //getSeconds() getMinutes() getHours()
   bot.tick();             //обработчик телеграмм бота    
-  SerialRead(); 
-  updateTimeMidnight();   //синхронизация в полночь  
+
 }
 //функции-обработчика сообщений телеграмм бота 
   void newMsg(FB_msg& msg){
@@ -104,59 +159,53 @@ void loop() {
   //обработка и запись в буфер цифр из чата
     if (flagExpectMessage)    
     {
-      lengthOutMessage = strlen(outBuff);
-      outBuff[lengthOutMessage++] = '^';
-      const char* inMessageBot = msg.text.c_str();
-      for (int i = 0; inMessageBot[i] != '\0' ; i++)    //пробегаем по сообщению
-      {	    
-        if (inMessageBot[i] >= '0' && inMessageBot[i] <= '9') //выписываем все цифры в строку, 
-          outBuff[lengthOutMessage++] = inMessageBot[i];      //обработка и разделение на стороне приёмника
-      }
-      flagExpectMessage = false;
+      // lengthOutMessage = strlen(outBuff);
+      // outBuff[lengthOutMessage++] = '^';
+      // const char* inMessageBot = msg.text.c_str();
+      // for (int i = 0; inMessageBot[i] != '\0' ; i++)    //пробегаем по сообщению
+      // {	    
+      //   if (inMessageBot[i] >= '0' && inMessageBot[i] <= '9') //выписываем все цифры в строку, 
+      //     outBuff[lengthOutMessage++] = inMessageBot[i];      //обработка и разделение на стороне приёмника
+      // }
+      // flagExpectMessage = false;
     }
   //записываем в буффер сообщение
     if(msg.text[0] == '/')      
     {      
-      outBuff[0] = '\0';                     //обнуляем буффер
     //ищем совпадения и записываем в буфер команду
       //------temperature--------
         if(msg.text.lastIndexOf("/temperature_day") != -1)
         {
-          strcat(outBuff, "/^a^a");
           startExpectMessage();
         }
         if(msg.text.lastIndexOf("/temperature_night") != -1)
         {
-          strcat(outBuff, "/^a^b");
           startExpectMessage();
         }
         if(msg.text.lastIndexOf("/temperature_day_off") != -1)
         {
-          strcat(outBuff, "/^a^c");
           startExpectMessage();
         }
         if(msg.text.lastIndexOf("/temperature_sunrise") != -1)
         {
-          strcat(outBuff, "/^a^d");
           startExpectMessage();
         }
         if(msg.text.lastIndexOf("/temperature_our_house") != -1)
         {
-          strcat(outBuff, "/^a^e");
           startExpectMessage();
         }
         if(msg.text.lastIndexOf("/temperature_raise") != -1)
         {
-          strcat(outBuff, "/^a^f");
+          serial.write(1 , 0);
         }
         if(msg.text.lastIndexOf("/temperature_reduce") != -1)
         {
-          strcat(outBuff, "/^a^g");
+          serial.write(1 , 2);
         }
       //------mode house---------
         if(msg.text.lastIndexOf("/normal") != -1)
         { 
-          strcat(outBuff, "/^c^a"); 
+          serial.write(3 , 5);
         }
         if(msg.text.lastIndexOf("/sleep") != -1)
         { 
@@ -179,9 +228,6 @@ void loop() {
         if(msg.text.lastIndexOf("/update_time") != -1)
         { 
           strcat(outBuff, "/^b^a"); 
-          writeIntInBuff(timeClient.getHours());
-          writeIntInBuff(timeClient.getMinutes());
-          writeIntInBuff(timeClient.getSeconds());
         }
         if(msg.text.lastIndexOf("/time_alarm") != -1)
         { 
@@ -196,7 +242,7 @@ void loop() {
   //отправка данных в порт
     if(!flagExpectMessage) 
     {
-      sendMessageMega();
+      //sendMessageMega();
     } 
   //если на дождались, закрываем возможность для приёма сообщений без '/'    
     if(flagExpectMessage && millis() - timeRestartExpect > 5000)    
@@ -206,33 +252,33 @@ void loop() {
     } 
   }
 //отправка сообщения на мегу
-  void sendMessageMega (){
-    lengthOutMessage = strlen(outBuff);
-    outBuff[lengthOutMessage++] = '^';
-    byte crc = crc8_bytes((byte*)&outBuff,lengthOutMessage);
-    outBuff[lengthOutMessage++] = crc;
-    outBuff[lengthOutMessage++] = ';';
-    Serial.write(outBuff, lengthOutMessage);     //send messege      
-  }
+  // void sendMessageMega (){
+  //   lengthOutMessage = strlen(outBuff);
+  //   outBuff[lengthOutMessage++] = '^';
+  //   byte crc = crc8_bytes((byte*)&outBuff,lengthOutMessage);
+  //   outBuff[lengthOutMessage++] = crc;
+  //   outBuff[lengthOutMessage++] = ';';
+  //   serial.write(outBuff, lengthOutMessage);     //send messege      
+  // }
 //чтение данных от Mega
-  void SerialRead() {
-   if (Mega_serial.available()) 
-   {
-     char command = Mega_serial.buf[0];
-     switch (command) {
-      //повтораная отправка
-      case('*'):
-        Serial.write(outBuff, lengthOutMessage); 
-        break;       
-      case('#'):
-        bot.sendMessage ("fail");
-        break;
-      default:
-        bot.sendMessage(Mega_serial.buf);
-        break;
-     }
-   }   
-  } 
+  // void SerialRead() {
+  //  if (Mega_serial.available()) 
+  //  {
+  //    char command = Mega_serial.buf[0];
+  //    switch (command) {
+  //     //повтораная отправка
+  //     case('*'):
+  //       Serial.write(outBuff, lengthOutMessage); 
+  //       break;       
+  //     case('#'):
+  //       bot.sendMessage ("fail");
+  //       break;
+  //     default:
+  //       bot.sendMessage(Mega_serial.buf);
+  //       break;
+  //    }
+  //  }   
+  // } 
 //функция добавления числа в собщение на отправку
   void writeIntInBuff ( byte value){
     strcat(outBuff, "^");  //дописываем разделитель в буфер
@@ -248,21 +294,21 @@ void loop() {
   }
 
 //синхронизация времени с мегой в полночь
-  void updateTimeMidnight(){
-  //static bool updateTime = false;
-  if (timeClient.getHours() == 0 && timeClient.getMinutes() == 0 &&
-      timeClient.getSeconds() == 0 ) 
-      {
-        outBuff[0] = '\0';
-        strcat(outBuff, "/^b^a"); 
-        writeIntInBuff(timeClient.getHours());
-        writeIntInBuff(timeClient.getMinutes());
-        writeIntInBuff(timeClient.getSeconds());
-        lengthOutMessage = strlen(outBuff);
-        sendMessageMega();
-        delay(1000);   //задержка, что бы не было кучи обновлений времени в течении этой секунды при 00.00.00
-      }  
-  }
+  // void updateTimeMidnight(){
+  // //static bool updateTime = false;
+  // if (timeClient.getHours() == 0 && timeClient.getMinutes() == 0 &&
+  //     timeClient.getSeconds() == 0 ) 
+  //     {
+  //       outBuff[0] = '\0';
+  //       strcat(outBuff, "/^b^a"); 
+  //       writeIntInBuff(timeClient.getHours());
+  //       writeIntInBuff(timeClient.getMinutes());
+  //       writeIntInBuff(timeClient.getSeconds());
+  //       lengthOutMessage = strlen(outBuff);
+  //       sendMessageMega();
+  //       delay(1000);   //задержка, что бы не было кучи обновлений времени в течении этой секунды при 00.00.00
+  //     }  
+  // }
 //открываем возможность для приёма сообщений из чата бота без '/'  
   void startExpectMessage() {
     flagExpectMessage = true;            //откладываем отправление, ждём данных
