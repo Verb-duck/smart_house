@@ -46,7 +46,7 @@ class Heater  {
        if ( !flag_retenion_temp) {             //и подгоняем температуру
          if ( *temperature_set > temperature_now * 10)  flag_heater = true;
          else   flag_heater = false;
-         if ( *temperature_set - 1 == (int)temperature_now * 10 ) {
+         if ( !mode_summer.value && *temperature_set - 1 == (int)temperature_now * 10 ) {
           flag_retenion_temp = true; //когда встала нужная температура
           timer_ratio = 0;
          }

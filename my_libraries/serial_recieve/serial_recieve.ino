@@ -1,17 +1,22 @@
-  #include "AsyncStream.h"
+#include "AsyncStream.h"
   #include "GParser.h"
   #include <SoftwareSerial.h>
-  SoftwareSerial mySerial(10 , 9);
+  //SoftwareSerial mySerial(D3 ,D2);   // RX, TX  
 
   template<int Size> 
-  class UartSerial {
+  class UartSerial : public GParser {
+    private:
+    Stream* serial;
+    AsyncStream<Size> *iStream;
+    char outBuff[Size];             //buff save and send message
+    byte lengthOut = 0;
     public:
-    UartSerial( Stream* serial) {
+    byte category, variable;
+    UartSerial( Stream* serial) : GParser(iStream->buf, '^') {
       this -> serial = serial;
-      iStream = new AsyncStream<Size>(serial,';',50); 
-      parser = new GParser(iStream->buf, '^');
+      iStream = new AsyncStream<Size>(serial,';',50);   //приём сообщения
     }
-    void read() {
+    bool read() {
       if (iStream -> available()) 
       {
         byte length = strlen(iStream->buf);        
@@ -19,15 +24,36 @@
         if(crc != 0)
         {
           //send(0 , 0);
-          return;
-        } 
-        Serial.print((byte)iStream->buf[0]);
-        Serial.print(" "); 
-        Serial.println((byte)iStream->buf[2]);
+          return false;
+        }
+        category = (byte)iStream->buf[0];
+        variable = (byte)iStream->buf[2];
+        Serial.print(iStream->buf);
+        Serial.println(" ");
+        split();
+        Serial.print(buf);
+        Serial.println(" ");
+        return true;
       }
+      return false;
     }
-    template<class type1>
-    void send(byte category, byte variable, type1 value) {
+    bool getBool(int num) {
+        return atol(str[num]);
+    }
+    //отправка сообщения
+     template<class type1>
+     void send(byte category,  type1 value) {
+      lengthOut = 0;     
+      outBuff[lengthOut++] = category;
+      outBuff[lengthOut++] = '^';
+      write_value_buff(value);
+      byte crc = crc8_bytes((byte*)&outBuff,lengthOut);
+      outBuff[lengthOut++] = crc;
+      outBuff[lengthOut++] = ';';
+      serial->write(outBuff, lengthOut);        //send messege  
+     }
+     template<class type1>
+     void send(byte category, byte variable, type1 value) {
       lengthOut = 0;     
       outBuff[lengthOut++] = category;
       outBuff[lengthOut++] = '^';
@@ -40,9 +66,9 @@
       serial->write(outBuff, lengthOut);        //send messege  
       Serial.print("message send = "); 
       Serial.println(outBuff);
-    }
-    template<class type1, class type2>
-    void send(byte category, byte variable, type1 value,  type2 value2) {
+     }
+     template<class type1, class type2>
+     void send(byte category, byte variable, type1 value,  type2 value2) {
       lengthOut = 0;     
       outBuff[lengthOut++] = category;
       outBuff[lengthOut++] = '^';
@@ -56,9 +82,9 @@
       serial->write(outBuff, lengthOut);        //send messege  
       Serial.print("message send = "); 
       Serial.println(outBuff);
-    }
-    template<class type1, class type2, class type3>
-    void send(byte category, byte variable, type1 value, type2 value2, type3 value3) {
+     }
+     template<class type1, class type2, class type3>
+     void send(byte category, byte variable, type1 value, type2 value2, type3 value3) {
       lengthOut = 0;     
       outBuff[lengthOut++] = category;
       outBuff[lengthOut++] = '^';
@@ -73,16 +99,9 @@
       serial->write(outBuff, lengthOut);        //send messege  
       Serial.print("message send = "); 
       Serial.print(outBuff);
-      Serial.print("   "); 
-      Serial.println((bool)outBuff[4]);
-    }
-    private:
-    Stream* serial;
-    AsyncStream<Size> *iStream;
-    GParser *parser;
-    char outBuff[Size];             //buff save and send message
-    byte lengthOut = 0;
-   //функции записи значения в буфер
+     }
+    private:    
+    //функции записи значения в буфер
       void write_value_buff (int value) {
         char temp[5];
         itoa(value,temp, DEC);  //преобразовываем число в char
@@ -101,10 +120,7 @@
         }       
         outBuff[lengthOut++] = '^';
       }
-      void write_value_buff (bool value) {
-        outBuff[lengthOut++] = value;
-        outBuff[lengthOut++] = '^';
-      }
+      
    // функция для расчёта crc
       byte crc8_bytes(byte *buffer, byte size) {
         byte crc = 0;
@@ -118,14 +134,26 @@
         return crc;
       }
   };
-  UartSerial<50> serial(&mySerial);
+  UartSerial<50> serial(&Serial2);
 
+  enum category {
+    FIRST, temperature, now, day, nigth,
+  };
 void setup() {
-  mySerial.begin(115200);
+  Serial2.begin(115200);
   Serial.begin(9600);
-  serial.send(1,2, false, 2.2,true);
-  
 }
 
 void loop() {
+  if(serial.read()) {
+    // Serial.print(serial.category);
+    // Serial.print(" ");
+    // Serial.print(serial.variable);
+    // Serial.print(" ");
+    // Serial.print(serial[2]);
+    // Serial.print(" ");
+    // Serial.print(serial[3]);
+    // Serial.print(" ");
+    // Serial.println(serial[4]);
+  }
 }
