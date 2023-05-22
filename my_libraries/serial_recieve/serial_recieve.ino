@@ -15,24 +15,24 @@
     UartSerial( Stream* serial) : GParser(iStream->buf, '^') {
       this -> serial = serial;
       iStream = new AsyncStream<Size>(serial,';',50);   //приём сообщения
+      GParser::buf = iStream->buf;                      //ещё раз,так как при созданнии объекта, этого буфера ещё не существует
     }
     bool read() {
       if (iStream -> available()) 
       {
+        //if()
         byte length = strlen(iStream->buf);        
         byte crc = crc8_bytes((byte*)iStream,length);
-        if(crc != 0)
-        {
-          //send(0 , 0);
-          return false;
-        }
+        // if(crc != 0)
+        // {
+        //   serial->write(255);
+        //   return false;
+        // }
         category = (byte)iStream->buf[0];
         variable = (byte)iStream->buf[2];
-        Serial.print(iStream->buf);
+        Serial.print(iStream->buf[0]);
         Serial.println(" ");
         split();
-        Serial.print(buf);
-        Serial.println(" ");
         return true;
       }
       return false;
@@ -150,10 +150,10 @@ void loop() {
     // Serial.print(" ");
     // Serial.print(serial.variable);
     // Serial.print(" ");
-    // Serial.print(serial[2]);
+    // Serial.print(serial.getBool(2));
     // Serial.print(" ");
-    // Serial.print(serial[3]);
+    // Serial.print(serial.getFloat(3));
     // Serial.print(" ");
-    // Serial.println(serial[4]);
+    // Serial.println(serial.getBool(4));
   }
 }

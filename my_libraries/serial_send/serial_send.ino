@@ -11,6 +11,7 @@
     GParser *parser;
     char outBuff[Size];             //buff save and send message
     byte lengthOut = 0;
+    char replay_send[]
     public:
     UartSerial( Stream* serial) : GParser(iStream->buf, '^') {
       this -> serial = serial;
@@ -139,6 +140,6 @@ void setup() {
 }
 
 void loop() {
-  serial.send(1,2, true, 2.2,true);
+  mySerial.write(59);
   delay(2000);
 }
