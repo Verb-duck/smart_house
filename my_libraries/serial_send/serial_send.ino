@@ -2,36 +2,94 @@
   #include "GParser.h"
   #include <SoftwareSerial.h>
   SoftwareSerial mySerial(7 , 8);   // RX, TX  
+  uint32_t timer(0);
+   #define DEBUGING 1 
+  #if (DEBUGING == 1)
+  #define PRINT(title, y) \
+    Serial.print(title); \
+    Serial.print(": "); \
+    Serial.println(y);
+  #else
+  #define PRINT(titly, y)
+  #endif
 
   template<int Size> 
   class UartSerial : public GParser {
     private:
     Stream* serial;
     AsyncStream<Size> *iStream;
-    GParser *parser;
     char outBuff[Size];             //buff save and send message
     byte lengthOut = 0;
-    char replay_send[]
+    uint8_t attempt{0} , max_attempt{50};
     public:
     UartSerial( Stream* serial) : GParser(iStream->buf, '^') {
       this -> serial = serial;
       iStream = new AsyncStream<Size>(serial,';',50);   //приём сообщения
+      GParser::buf = iStream->buf;                      //ещё раз,так как при созданнии объекта, этого буфера ещё не существует
     }
-    void read() {
+    bool read() {
       if (iStream -> available()) 
       {
+        PRINT("incoming message: " , iStream->buf);
+        if(iStream->buf[0] == 33 && iStream->buf[1] == 33 )         //пришла команда на повторную отправку сообщения, почему 33? да просто так
+        {
+          if(attempt <= max_attempt)      
+          {
+            attempt++;
+            serial->write(outBuff, lengthOut);     //заново отправляем 
+            PRINT("replay send message", "");
+            return false;
+          }
+          else                                     
+          {
+            attempt = 0;                       
+            return false;            
+          }
+        } 
+        if(iStream->buf[0] == 33 && iStream->buf[0] == 32 )      //добавить выдачу сообщения на вверх
+        {
+         PRINT("its ok, message recieve" , "" );
+         return false;
+        }
         byte length = strlen(iStream->buf);        
         byte crc = crc8_bytes((byte*)iStream,length);
-        if(crc != 0)
-        {
-          //send(0 , 0);
-          return;
-        } 
+        if(crc != 0 )                                     //проверяем crc
+        {                           
+          if(attempt <= max_attempt)
+          {
+            attempt++;
+            //отсылаем команду на повторную отправку сообщения
+              serial->write(33);  serial->write(33);  serial->write(';');
+            PRINT("problemm, attempt №" , attempt);
+            return false;
+          }
+          else
+          {
+            attempt = 0;                       
+            return false;            
+          }
+
+        }
         split();
+        //подтверждаем, что сообщение принято
+          serial->write(33);  serial->write(32);  serial->write(';'); 
+        attempt = 0;              //сбрасываем счётчик попыток повторной отправки/приёма
+        PRINT("message ok" , "");
+        return true;
       }
+      return false;
+    }
+    byte getCategory () {
+      return (byte)iStream->buf[0];
+    }
+    byte getVariable() {
+      return (byte)iStream->buf[2];
     }
     bool getBool(int num) {
         return atol(str[num]);
+    }
+    void setMaxAttempt( uint8_t set) {        //максимальное колличетсво попыток повторной отправки сообщения
+      max_attempt = set;
     }
     //отправка сообщения
      template<class type1>
@@ -98,7 +156,7 @@
       void write_value_buff (int value) {
         char temp[5];
         itoa(value,temp, DEC);  //преобразовываем число в char
-        for(char* ptr(temp); *ptr != '\0'; ptr++)  
+        for(char* ptr(temp); *ptr != '\0'; ptr++)
           outBuff[lengthOut++] = *ptr;
         outBuff[lengthOut++] = '^';
       }
@@ -132,14 +190,17 @@
   enum category {
     FIRST, temperature, now, day, nigth,
   };
+
+  char temp[10]{'1', '^', '3', '^' , 'a' , ';' };
+
 void setup() {
   mySerial.begin(115200);
   Serial.begin(9600);
-  
-  
+  serial.send(1 , 2, false, 'a');
 }
 
 void loop() {
-  mySerial.write(59);
-  delay(2000);
+  
+  if(serial.read()) {     
+  }
 }

@@ -1,17 +1,26 @@
-#include "AsyncStream.h"
+  #include "AsyncStream.h"
   #include "GParser.h"
   #include <SoftwareSerial.h>
   //SoftwareSerial mySerial(D3 ,D2);   // RX, TX  
+  #define DEBUGING 1 
+  #if (DEBUGING == 1)
+  #define PRINT(title, y) \
+    Serial.print(title); \
+    Serial.print(": "); \
+    Serial.println(y);
+  #else
+  #define PRINT(titly, y)
+  #endif
 
-  template<int Size> 
+ template<int Size> 
   class UartSerial : public GParser {
     private:
     Stream* serial;
     AsyncStream<Size> *iStream;
     char outBuff[Size];             //buff save and send message
     byte lengthOut = 0;
+    uint8_t attempt{0} , max_attempt{50};
     public:
-    byte category, variable;
     UartSerial( Stream* serial) : GParser(iStream->buf, '^') {
       this -> serial = serial;
       iStream = new AsyncStream<Size>(serial,';',50);   //приём сообщения
@@ -20,25 +29,66 @@
     bool read() {
       if (iStream -> available()) 
       {
-        //if()
+        PRINT("incoming message: " , iStream->buf);
+        if(iStream->buf[0] == 33 && iStream->buf[1] == 33 )         //пришла команда на повторную отправку сообщения, почему 33? да просто так
+        {
+          if(attempt <= max_attempt)      
+          {
+            attempt++;
+            serial->write(outBuff, lengthOut);     //заново отправляем 
+            PRINT("replay send message", "");
+            return false;
+          }
+          else                                     
+          {
+            attempt = 0;                       
+            return false;            
+          }
+        } 
+        if(iStream->buf[0] == 33 && iStream->buf[0] == 32 )      //добавить выдачу сообщения на вверх
+        {
+         PRINT("its ok, message recieve" , "" );
+         return false;
+        }
         byte length = strlen(iStream->buf);        
         byte crc = crc8_bytes((byte*)iStream,length);
-        // if(crc != 0)
-        // {
-        //   serial->write(255);
-        //   return false;
-        // }
-        category = (byte)iStream->buf[0];
-        variable = (byte)iStream->buf[2];
-        Serial.print(iStream->buf[0]);
-        Serial.println(" ");
+        if(crc != 0 )                                     //проверяем crc
+        {                           
+          if(attempt <= max_attempt)
+          {
+            attempt++;
+            //отсылаем команду на повторную отправку сообщения
+              serial->write(33);  serial->write(33);  serial->write(';');
+            PRINT("problemm, attempt №" , attempt);
+            return false;
+          }
+          else
+          {
+            attempt = 0;                       
+            return false;            
+          }
+
+        }
         split();
+        //подтверждаем, что сообщение принято
+          serial->write(33);  serial->write(32);  serial->write(';'); 
+        attempt = 0;              //сбрасываем счётчик попыток повторной отправки/приёма
+        PRINT("message ok" , "");
         return true;
       }
       return false;
     }
+    byte getCategory () {
+      return (byte)iStream->buf[0];
+    }
+    byte getVariable() {
+      return (byte)iStream->buf[2];
+    }
     bool getBool(int num) {
         return atol(str[num]);
+    }
+    void setMaxAttempt( uint8_t set) {        //максимальное колличетсво попыток повторной отправки сообщения
+      max_attempt = set;
     }
     //отправка сообщения
      template<class type1>
@@ -137,7 +187,7 @@
   UartSerial<50> serial(&Serial2);
 
   enum category {
-    FIRST, temperature, now, day, nigth,
+    FIRST, temperature, now, day, nigth,s
   };
 void setup() {
   Serial2.begin(115200);
@@ -145,15 +195,7 @@ void setup() {
 }
 
 void loop() {
-  if(serial.read()) {
-    // Serial.print(serial.category);
-    // Serial.print(" ");
-    // Serial.print(serial.variable);
-    // Serial.print(" ");
-    // Serial.print(serial.getBool(2));
-    // Serial.print(" ");
-    // Serial.print(serial.getFloat(3));
-    // Serial.print(" ");
-    // Serial.println(serial.getBool(4));
+  if(serial.read()) { 
+    
   }
 }
