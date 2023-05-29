@@ -1,7 +1,7 @@
   #include "AsyncStream.h"
   #include "GParser.h"
   #include <SoftwareSerial.h>
-  //SoftwareSerial mySerial(D3 ,D2);   // RX, TX  
+  SoftwareSerial mySerial(7 , 8);   // RX, TX  
   #define DEBUGING 1 
   #if (DEBUGING == 1)
   #define PRINT(title, y) \
@@ -11,6 +11,9 @@
   #else
   #define PRINT(titly, y)
   #endif
+
+  //думаю надо можно сократить и оптимизировать шаблон отправки сообщения,
+  //пока хз, нужно запускать в продакшн
 
  template<int Size> 
   class UartSerial : public GParser {
@@ -39,9 +42,11 @@
             PRINT("replay send message", "");
             return false;
           }
-          else                                     
+       //добавить возврат сообщения о неудаче
+          else          //сообщение не отправленно                                   
           {
-            attempt = 0;                       
+            attempt = 0;  
+            PRINT("message didnt send", "");                     
             return false;            
           }
         } 
@@ -62,7 +67,8 @@
             PRINT("problemm, attempt №" , attempt);
             return false;
           }
-          else
+      //добавить возврат сообщения о неудаче
+          else    //сообщение не полученно
           {
             attempt = 0;                       
             return false;            
@@ -78,10 +84,10 @@
       }
       return false;
     }
-    byte getCategory () {
+    byte category () {
       return (byte)iStream->buf[0];
     }
-    byte getVariable() {
+    byte variable() {
       return (byte)iStream->buf[2];
     }
     bool getBool(int num) {
@@ -90,65 +96,63 @@
     void setMaxAttempt( uint8_t set) {        //максимальное колличетсво попыток повторной отправки сообщения
       max_attempt = set;
     }
-    //отправка сообщения
-     template<class type1>
-     void send(byte category,  type1 value) {
-      lengthOut = 0;     
-      outBuff[lengthOut++] = category;
-      outBuff[lengthOut++] = '^';
-      write_value_buff(value);
+    //отправка сообщения       
+     template<byte category = 255, byte variable = 255, class type1>
+     void send(type1 value1) {
+      lengthOut = 0;  
+      if(category != 255)
+      {
+        outBuff[lengthOut++] = category;  outBuff[lengthOut++] = '^';
+      }
+      if(variable != 255) 
+      {
+        outBuff[lengthOut++] = variable;  outBuff[lengthOut++] = '^';
+      }
+      write_value_buff(value1);
       byte crc = crc8_bytes((byte*)&outBuff,lengthOut);
       outBuff[lengthOut++] = crc;
       outBuff[lengthOut++] = ';';
-      serial->write(outBuff, lengthOut);        //send messege  
+      serial->write(outBuff, lengthOut);         //send messege  
+      PRINT("message send: ", outBuff);
      }
-     template<class type1>
-     void send(byte category, byte variable, type1 value) {
-      lengthOut = 0;     
-      outBuff[lengthOut++] = category;
-      outBuff[lengthOut++] = '^';
-      outBuff[lengthOut++] = variable;
-      outBuff[lengthOut++] = '^';
-      write_value_buff(value);
-      byte crc = crc8_bytes((byte*)&outBuff,lengthOut);
-      outBuff[lengthOut++] = crc;
-      outBuff[lengthOut++] = ';';
-      serial->write(outBuff, lengthOut);        //send messege  
-      Serial.print("message send = "); 
-      Serial.println(outBuff);
-     }
-     template<class type1, class type2>
-     void send(byte category, byte variable, type1 value,  type2 value2) {
-      lengthOut = 0;     
-      outBuff[lengthOut++] = category;
-      outBuff[lengthOut++] = '^';
-      outBuff[lengthOut++] = variable;
-      outBuff[lengthOut++] = '^';
-      write_value_buff(value);
+     template<byte category = 255, byte variable = 255, class type1, class type2>
+     void send(type1 value1, type2 value2) {
+      lengthOut = 0;  
+      if(category != 255)
+      {
+        outBuff[lengthOut++] = category;  outBuff[lengthOut++] = '^';
+      }
+      if(variable != 255) 
+      {
+        outBuff[lengthOut++] = variable;  outBuff[lengthOut++] = '^';
+      }
+      write_value_buff(value1);
       write_value_buff(value2);
       byte crc = crc8_bytes((byte*)&outBuff,lengthOut);
       outBuff[lengthOut++] = crc;
       outBuff[lengthOut++] = ';';
-      serial->write(outBuff, lengthOut);        //send messege  
-      Serial.print("message send = "); 
-      Serial.println(outBuff);
+      serial->write(outBuff, lengthOut);         //send messege  
+      PRINT("message send: ", outBuff);
      }
-     template<class type1, class type2, class type3>
-     void send(byte category, byte variable, type1 value, type2 value2, type3 value3) {
-      lengthOut = 0;     
-      outBuff[lengthOut++] = category;
-      outBuff[lengthOut++] = '^';
-      outBuff[lengthOut++] = variable;
-      outBuff[lengthOut++] = '^';
-      write_value_buff(value);
+     template<byte category = 255, byte variable = 255, class type1, class type2, class type3>
+     void send(type1 value1, type2 value2, type3 value3) {
+      lengthOut = 0;  
+      if(category != 255)
+      {
+        outBuff[lengthOut++] = category;  outBuff[lengthOut++] = '^';
+      }
+      if(variable != 255) 
+      {
+        outBuff[lengthOut++] = variable;  outBuff[lengthOut++] = '^';
+      }
+      write_value_buff(value1);
       write_value_buff(value2);
       write_value_buff(value3);
       byte crc = crc8_bytes((byte*)&outBuff,lengthOut);
       outBuff[lengthOut++] = crc;
       outBuff[lengthOut++] = ';';
-      serial->write(outBuff, lengthOut);        //send messege  
-      Serial.print("message send = "); 
-      Serial.print(outBuff);
+      serial->write(outBuff, lengthOut);         //send messege  
+      PRINT("message send: ", outBuff);
      }
     private:    
     //функции записи значения в буфер
@@ -185,6 +189,7 @@
       }
   };
   UartSerial<50> serial(&Serial2);
+  //UartSerial<50> serial(&mySerial);
 
   enum category {
     FIRST, temperature, now, day, nigth,s
@@ -192,10 +197,10 @@
 void setup() {
   Serial2.begin(115200);
   Serial.begin(9600);
+  mySerial.begin(115200);
+  serial.send<temperature, now>(20, false, 200.2);
 }
 
 void loop() {
-  if(serial.read()) { 
-    
-  }
+  serial.read();
 }

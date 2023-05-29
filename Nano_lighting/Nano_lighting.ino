@@ -45,6 +45,7 @@
   #define BLACKTIME   3
 
  //---------UART---------------  
+  #include "UartSerial.h"
   #include "SoftwareSerial.h"
   SoftwareSerial SerialMega(7, 8);   // RX, TX    
   #include "AsyncStream.h"
