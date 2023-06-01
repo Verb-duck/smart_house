@@ -44,7 +44,7 @@ void lcd_imagin () {
     if (menu_click) {
       menu_click = false;
       switch (line_menu) {
-      case 0 : mode_menu = TEMPERATURE; LCD.clear();  break;
+      case 0 : mode_menu = TEMPERATURE_VIEW; LCD.clear();  break;
       case 1 : mode_menu = MODE_SCRIPT_HOUSE; LCD.clear(); break;
       case 2 : mode_menu = ALARM_CLOCK; LCD.clear();  break;
       case 3 : break; 
@@ -68,7 +68,7 @@ void lcd_imagin () {
     LCD.print("LIGHTING ");
     break;
 
-    case (TEMPERATURE) :
+    case (TEMPERATURE_VIEW) :
     LCD.setCursor(0, 0);
     temperature_show ( FULL_STRING );
     LCD.setCursor(0, 1);
@@ -99,16 +99,16 @@ void script_house_show () {
  // LCD.clear();
   LCD.print("Script: ");
   switch (script_house.value) {
-    case(MOVE) :
-    LCD.print( "MOVE " );
+    case(DAY) :
+    LCD.print( "DAY " );
     break;
-    case(NO_MOVE) :
-    LCD.print( "NO_MOVE " );
+    case(DAY_CAME_OUT) :
+    LCD.print( "DAY_CAME_OUT " );
     break;
     case(SLEEP) :
     LCD.print( "SLEEP " );
     break;
-    case(OUTSIDE_THE_HOME) :
+    case(LEFT_HOME) :
     LCD.print( "OUTSIDE THE HOME " );
     break;    
     case(SUNRISE) :

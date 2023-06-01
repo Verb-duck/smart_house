@@ -1,4 +1,4 @@
-#define ver "3.04 serial esp "
+#define version "3.04 serial esp "
 #define DEBUGING 1
 
 //--------настройка--------
@@ -95,7 +95,7 @@ auto temperature_day  = create(210,INT);             //температура д
 auto temperature_night = create (190,INT);           //температура ночи
 auto temperature_day_off = create(200,INT);         //температура простоя
 auto temperature_sunrise = create(200,INT);         //температура для подъёма
-auto temperature_our_house = create(20,INT);       //температура если уехал
+auto temperature_left_home = create(20,INT);       //температура если уехал
 float temperature_now;                             //температура измерения
 //----lighting----
 uint8_t random_color;
@@ -104,7 +104,7 @@ uint8_t light_color_now = 30;
 uint8_t light_saturation_now = 180;
 uint8_t Brightness;
 //----clock----
-auto work_alarm_clock(create(false,BOOL));  // вкл/выкл будильник
+auto work_alarm_clock(create(false,BOOL));  // вкл/выкл будильник , подумать над включением функции sunriseStartSet в класс объекта
 //-----menu------
 static uint32_t time_remove_mainLcd;  //переменная времени для возврата на главный экран
 static uint32_t time_backlight_lcd;   //переменная выключения подсветки экрана

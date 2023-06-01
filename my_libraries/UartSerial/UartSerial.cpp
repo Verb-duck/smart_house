@@ -1,12 +1,12 @@
 template<int Size>
-inline UartSerial<Size>::UartSerial(Stream* serial) : GParser(iStream->buf, '^') {
+ UartSerial<Size>::UartSerial(Stream* serial) : GParser(iStream->buf, '^') {
     this->serial = serial;
     iStream = new AsyncStream<Size>(serial, ';', 50);   //приём сообщения
     GParser::buf = iStream->buf;                      //ещё раз,так как при созданнии объекта, этого буфера ещё не существует
 }
 
 template<int Size>
-inline bool UartSerial<Size>::read()
+ bool UartSerial<Size>::read()
 {
     if (iStream->available())
     {
@@ -33,8 +33,8 @@ inline bool UartSerial<Size>::read()
             PRINT("its ok, message recieve", "");
             return false;
         }
-        byte length = strlen(iStream->buf);
-        byte crc = crc8_bytes((byte*)iStream, length);
+        uint8_t length = strlen(iStream->buf);
+        uint8_t crc = crc8_uint8_ts((uint8_t*)iStream, length);
         if (crc != 0)                                     //проверяем crc
         {
             if (attempt <= max_attempt)
@@ -63,7 +63,7 @@ inline bool UartSerial<Size>::read()
 }
 
 template<int Size>
-inline void UartSerial<Size>::write_value_buff(int value)
+ void UartSerial<Size>::write_value_buff(int value)
 {
     char temp[5];
     itoa(value, temp, DEC);  //преобразовываем число в char
@@ -73,7 +73,7 @@ inline void UartSerial<Size>::write_value_buff(int value)
 }
 
 template<int Size>
-inline void UartSerial<Size>::write_value_buff(double value)
+ void UartSerial<Size>::write_value_buff(double value)
 {
     char temp[20];
     dtostrf(value, 19, 3, temp);  //преобразовываем число в char
@@ -87,11 +87,11 @@ inline void UartSerial<Size>::write_value_buff(double value)
 }
 
 template<int Size>
-inline byte UartSerial<Size>::crc8_bytes(byte* buffer, byte size)
+ uint8_t UartSerial<Size>::crc8_uint8_ts(uint8_t* buffer, uint8_t size)
 {
-    byte crc = 0;
-    for (byte i = 0; i < size; i++) {
-        byte data = buffer[i];
+    uint8_t crc = 0;
+    for (uint8_t i = 0; i < size; i++) {
+        uint8_t data = buffer[i];
         for (int j = 8; j > 0; j--) {
             crc = ((crc ^ data) & 1) ? (crc >> 1) ^ 0x8C : (crc >> 1);
             data >>= 1;
@@ -101,8 +101,8 @@ inline byte UartSerial<Size>::crc8_bytes(byte* buffer, byte size)
 }
 
 template<int Size>
-template<byte category, byte variable, class type1>
-inline void UartSerial<Size>::send(type1 value1)
+template<uint8_t category, uint8_t variable, class type1>
+ void UartSerial<Size>::send(type1 value1)
 {
     lengthOut = 0;
     if (category != 255)
@@ -114,7 +114,7 @@ inline void UartSerial<Size>::send(type1 value1)
         outBuff[lengthOut++] = variable;  outBuff[lengthOut++] = '^';
     }
     write_value_buff(value1);
-    byte crc = crc8_bytes((byte*)&outBuff, lengthOut);
+    uint8_t crc = crc8_uint8_ts((uint8_t*)&outBuff, lengthOut);
     outBuff[lengthOut++] = crc;
     outBuff[lengthOut++] = ';';
     serial->write(outBuff, lengthOut);         //send messege  
@@ -122,8 +122,8 @@ inline void UartSerial<Size>::send(type1 value1)
 }
 
 template<int Size>
-template<byte category, byte variable, class type1, class type2>
-inline void UartSerial<Size>::send(type1 value1, type2 value2)
+template<uint8_t category, uint8_t variable, class type1, class type2>
+ void UartSerial<Size>::send(type1 value1, type2 value2)
 {
     lengthOut = 0;
     if (category != 255)
@@ -136,7 +136,7 @@ inline void UartSerial<Size>::send(type1 value1, type2 value2)
     }
     write_value_buff(value1);
     write_value_buff(value2);
-    byte crc = crc8_bytes((byte*)&outBuff, lengthOut);
+    uint8_t crc = crc8_uint8_ts((uint8_t*)&outBuff, lengthOut);
     outBuff[lengthOut++] = crc;
     outBuff[lengthOut++] = ';';
     serial->write(outBuff, lengthOut);         //send messege  
@@ -144,8 +144,8 @@ inline void UartSerial<Size>::send(type1 value1, type2 value2)
 }
 
 template<int Size>
-template<byte category, byte variable, class type1, class type2, class type3>
-inline void UartSerial<Size>::send(type1 value1, type2 value2, type3 value3)
+template<uint8_t category, uint8_t variable, class type1, class type2, class type3>
+ void UartSerial<Size>::send(type1 value1, type2 value2, type3 value3)
 {
     lengthOut = 0;
     if (category != 255)
@@ -159,7 +159,7 @@ inline void UartSerial<Size>::send(type1 value1, type2 value2, type3 value3)
     write_value_buff(value1);
     write_value_buff(value2);
     write_value_buff(value3);
-    byte crc = crc8_bytes((byte*)&outBuff, lengthOut);
+    uint8_t crc = crc8_uint8_ts((uint8_t*)&outBuff, lengthOut);
     outBuff[lengthOut++] = crc;
     outBuff[lengthOut++] = ';';
     serial->write(outBuff, lengthOut);         //send messege  

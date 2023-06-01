@@ -4,34 +4,34 @@ void accomplishment_script_house () {
 
 //----------DAY----------------  
     switch (script_house.value) {
-      case( MOVE) :           
-      if ( last_script_house != MOVE ) {            //если первый запуск
+      case( DAY) :           
+      if ( last_script_house != DAY ) {            //если первый запуск
         heater_room_1.set_temperature (&temperature_day.value);
         heater_room_2.set_temperature (&temperature_day.value);
         mode_light_bedroom = START_LIGHT; serialWriteNano(mode_light_bedroom, 'a');
-        last_script_house = MOVE;
+        last_script_house = DAY;
         fun.cleaner(off);
       }
       if ( pir_sensor ()) {            
         timer_waiting = millis();       //сбрасываем таймер выключения
       }
       if ( millis() - timer_waiting >= TIME_OFF_NO_MOVE * 60000) {  //выключение при простое
-        script_house = NO_MOVE;
+        script_house = DAY_CAME_OUT;
       }
      
       break;
 
-      case( NO_MOVE) :
-      if ( last_script_house != NO_MOVE ) {            //если первый запуск
+      case( DAY_CAME_OUT) :
+      if ( last_script_house != DAY_CAME_OUT ) {            //если первый запуск
         heater_room_1.set_temperature (&temperature_day_off.value);
         heater_room_2.set_temperature (&temperature_day_off.value);
         mode_light_bedroom = OFF_LIGHT;serialWriteNano(mode_light_bedroom, 'a');
-        last_script_house = NO_MOVE;
+        last_script_house = DAY_CAME_OUT;
         fun.cleaner(on); 
       }
       if ( pir_sensor ()){
         timer_waiting = millis();
-        script_house = MOVE;
+        script_house = DAY;
       }
 
       case( VIEWING_FILM) :
@@ -87,7 +87,7 @@ void accomplishment_script_house () {
           timer_waiting = millis();
           count_start_day ++;          
           if ( count_start_day == 3) {
-            script_house = MOVE;
+            script_house = DAY;
             count_start_day = 0;
           } 
         }
@@ -97,16 +97,16 @@ void accomplishment_script_house () {
       
 //**********NIGHT**********  
 
-//----------OUTSIDE_THE_HOME------
-      case(OUTSIDE_THE_HOME):
-      if ( last_script_house != OUTSIDE_THE_HOME) {
-        last_script_house =  OUTSIDE_THE_HOME;
-        heater_room_1.set_temperature (&temperature_our_house.value);
-        heater_room_2.set_temperature (&temperature_our_house.value);
+//----------LEFT_HOME------
+      case(LEFT_HOME):
+      if ( last_script_house != LEFT_HOME) {
+        last_script_house =  LEFT_HOME;
+        heater_room_1.set_temperature (&temperature_left_home.value);
+        heater_room_2.set_temperature (&temperature_left_home.value);
         mode_light_bedroom = OFF_LIGHT;serialWriteNano(mode_light_bedroom, 'a');
       }
       break;
-//**********OUTSIDE_THE_HOME 
+//**********LEFT_HOME 
 
       default :
       break;

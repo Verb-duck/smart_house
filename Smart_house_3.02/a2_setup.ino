@@ -3,6 +3,7 @@
 void setup() {
   #if (DEBUGING == 1) 
   Serial.begin(9600);
+  PRINT("version " , version);
   #endif
   Serial2.begin(9600);        //связь с нано
   Serial3.begin(115200);      //связь с есп
@@ -16,7 +17,7 @@ void setup() {
   LCD.clear();
   LCD.backlight();       // включение подсветки дисплея
   LCD.setCursor(0,0);
-  LCD.print( "version "); LCD.print( ver); LCD.print(LCDdebug);
+  LCD.print( "version "); LCD.print( version); LCD.print(LCDdebug);
 //---------ик приёмник------
   IRLremote.begin(IR_PIN);
 //---------dht11----------
@@ -40,7 +41,7 @@ void setup() {
     writeEEPROM(temperature_night);  
     writeEEPROM(temperature_day_off);  
     writeEEPROM(temperature_sunrise);
-    writeEEPROM(temperature_our_house);       
+    writeEEPROM(temperature_left_home);       
     writeEEPROM(script_house);         
     writeEEPROM(work_alarm_clock);      
     PRINT("update EEPROM settings", " " );
@@ -50,7 +51,7 @@ void setup() {
     readEEPROM(temperature_night);  
     readEEPROM(temperature_day_off);  
     readEEPROM(temperature_sunrise);
-    readEEPROM(temperature_our_house);       
+    readEEPROM(temperature_left_home);       
     readEEPROM(script_house);         
     readEEPROM(work_alarm_clock);      
     PRINT("read EEPROM settings", " " );

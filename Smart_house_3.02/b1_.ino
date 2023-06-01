@@ -1,4 +1,4 @@
-void sunriseStartSet() {
+void sunriseStartSet() {          //расчёт всключения режима рассвет за TIME_SUNRISE до будильника
   if(alarmClockM.value - TIME_SUNRISE > 0) {
     sunriseStartTime.minute = alarmClockM.value - TIME_SUNRISE;
     sunriseStartTime.hour = alarmClockH.value;

@@ -44,16 +44,184 @@
   // How many seconds to show black between switches
   #define BLACKTIME   3
 
- //---------UART---------------  
-  #include "UartSerial.h"
-  #include "SoftwareSerial.h"
-  SoftwareSerial SerialMega(7, 8);   // RX, TX    
-  #include "AsyncStream.h"
-  AsyncStream<40> Mega_serial(&SerialMega,';',100); 
-  #include "GParser.h"
-  GParser Mega_parser (Mega_serial.buf, '^');
-  char outBuff[20];  
- 
+
+ //---------UART---------------
+ #include "AsyncStream.h"
+#include "GParser.h"
+template<int Size>
+class UartSerial : public GParser {
+private:
+    Stream* serial;
+    AsyncStream<Size>* iStream;
+    char outBuff[Size];             //buff save and send message
+    byte lengthOut = 0;
+    uint8_t attempt{ 0 }, max_attempt{ 50 };
+public:
+    UartSerial(Stream* serial) : GParser(iStream->buf, '^') {
+        this->serial = serial;
+        iStream = new AsyncStream<Size>(serial, ';', 50);   //приём сообщения
+        GParser::buf = iStream->buf;                      //ещё раз,так как при созданнии объекта, этого буфера ещё не существует
+    }
+    bool read() {
+        if (iStream->available())
+        {
+            PRINT("incoming message: ", iStream->buf);
+            if (iStream->buf[0] == 33 && iStream->buf[1] == 33)         //пришла команда на повторную отправку сообщения, почему 33? да просто так
+            {
+                if (attempt <= max_attempt)
+                {
+                    attempt++;
+                    serial->write(outBuff, lengthOut);     //заново отправляем 
+                    PRINT("replay send message", "");
+                    return false;
+                }
+                //добавить возврат сообщения о неудаче
+                else          //сообщение не отправленно                                   
+                {
+                    attempt = 0;
+                    PRINT("message didnt send", "");
+                    return false;
+                }
+            }
+            if (iStream->buf[0] == 33 && iStream->buf[0] == 32)      //добавить выдачу сообщения на вверх
+            {
+                PRINT("its ok, message recieve", "");
+                return false;
+            }
+            byte length = strlen(iStream->buf);
+            byte crc = crc8_bytes((byte*)iStream, length);
+            if (crc != 0)                                     //проверяем crc
+            {
+                if (attempt <= max_attempt)
+                {
+                    attempt++;
+                    //отсылаем команду на повторную отправку сообщения
+                    serial->write(33);  serial->write(33);  serial->write(';');
+                    PRINT("problemm, attempt №", attempt);
+                    return false;
+                }
+                //добавить возврат сообщения о неудаче
+                else    //сообщение не полученно
+                {
+                    attempt = 0;
+                    return false;
+                }
+
+            }
+            split();
+            //подтверждаем, что сообщение принято
+            serial->write(33);  serial->write(32);  serial->write(';');
+            attempt = 0;              //сбрасываем счётчик попыток повторной отправки/приёма
+            PRINT("message ok", "");
+            return true;
+        }
+        return false;
+    }
+    byte category() {
+        return (byte)iStream->buf[0];
+    }
+    byte variable() {
+        return (byte)iStream->buf[2];
+    }
+    bool getBool(int num) {
+        return atol(str[num]);
+    }
+    void setMaxAttempt(uint8_t set) {        //максимальное колличетсво попыток повторной отправки сообщения
+        max_attempt = set;
+    }
+    //отправка сообщения       
+    template<byte category = 255, byte variable = 255, class type1>
+    void send(type1 value1) {
+        lengthOut = 0;
+        if (category != 255)
+        {
+            outBuff[lengthOut++] = category;  outBuff[lengthOut++] = '^';
+        }
+        if (variable != 255)
+        {
+            outBuff[lengthOut++] = variable;  outBuff[lengthOut++] = '^';
+        }
+        write_value_buff(value1);
+        byte crc = crc8_bytes((byte*)&outBuff, lengthOut);
+        outBuff[lengthOut++] = crc;
+        outBuff[lengthOut++] = ';';
+        serial->write(outBuff, lengthOut);         //send messege  
+        PRINT("message send: ", outBuff);
+    }
+    template<byte category = 255, byte variable = 255, class type1, class type2>
+    void send(type1 value1, type2 value2) {
+        lengthOut = 0;
+        if (category != 255)
+        {
+            outBuff[lengthOut++] = category;  outBuff[lengthOut++] = '^';
+        }
+        if (variable != 255)
+        {
+            outBuff[lengthOut++] = variable;  outBuff[lengthOut++] = '^';
+        }
+        write_value_buff(value1);
+        write_value_buff(value2);
+        byte crc = crc8_bytes((byte*)&outBuff, lengthOut);
+        outBuff[lengthOut++] = crc;
+        outBuff[lengthOut++] = ';';
+        serial->write(outBuff, lengthOut);         //send messege  
+        PRINT("message send: ", outBuff);
+    }
+    template<byte category = 255, byte variable = 255, class type1, class type2, class type3>
+    void send(type1 value1, type2 value2, type3 value3) {
+        lengthOut = 0;
+        if (category != 255)
+        {
+            outBuff[lengthOut++] = category;  outBuff[lengthOut++] = '^';
+        }
+        if (variable != 255)
+        {
+            outBuff[lengthOut++] = variable;  outBuff[lengthOut++] = '^';
+        }
+        write_value_buff(value1);
+        write_value_buff(value2);
+        write_value_buff(value3);
+        byte crc = crc8_bytes((byte*)&outBuff, lengthOut);
+        outBuff[lengthOut++] = crc;
+        outBuff[lengthOut++] = ';';
+        serial->write(outBuff, lengthOut);         //send messege  
+        PRINT("message send: ", outBuff);
+    }
+private:
+    //функции записи значения в буфер
+    void write_value_buff(int value) {
+        char temp[5];
+        itoa(value, temp, DEC);  //преобразовываем число в char
+        for (char* ptr(temp); *ptr != '\0'; ptr++)
+            outBuff[lengthOut++] = *ptr;
+        outBuff[lengthOut++] = '^';
+    }
+    void write_value_buff(double value) {
+        char temp[20];
+        dtostrf(value, 19, 3, temp);  //преобразовываем число в char
+        for (char* ptr(temp); *ptr != '\0'; ptr++)
+        {
+            if (*ptr == ' ')
+                continue;
+            outBuff[lengthOut++] = *ptr;
+        }
+        outBuff[lengthOut++] = '^';
+    }
+
+    // функция для расчёта crc
+    byte crc8_bytes(byte* buffer, byte size) {
+        byte crc = 0;
+        for (byte i = 0; i < size; i++) {
+            byte data = buffer[i];
+            for (int j = 8; j > 0; j--) {
+                crc = ((crc ^ data) & 1) ? (crc >> 1) ^ 0x8C : (crc >> 1);
+                data >>= 1;
+            }
+        }
+        return crc;
+    }
+};
+
  // ----- пины подключения
   #define SOUND_R A1         // аналоговый пин вход аудио, правый канал
   #define SOUND_L A2         // аналоговый пин вход аудио, левый канал
@@ -290,10 +458,10 @@
     NIGHT_LIGHT,  SUNRISE_LIGHT, COLOR_MUSIC, SUNSET_LIGHT, 
   } mode_light_bedroom(SUNRISE_LIGHT);
 
+
 void setup() {
   Serial.begin(9600);
   Serial.print("Version: "); Serial.println(VERSION);
-  SerialMega.begin(9600);
  //---------лента 2811------- 
   FastLED.addLeds<WS2811, LED_PIN, BRG>(leds, LED_NUM).setCorrection( TypicalLEDStrip );
   FastLED.addLeds<WS2811, LED_PIN_CENTR, BRG>(leds_centr, LED_NUM_CENTR).setCorrection( TypicalLEDStrip );
@@ -373,7 +541,6 @@ void loop() {
   remoteTick();     // опрос ИК пульта
   mainLoop();       // главный цикл обработки и отрисовки
   eepromTick();     // проверка не пора ли сохранить настройки
-  serialRead();     // связь с мегой
  }
 
 void mainLoop() {
@@ -720,56 +887,7 @@ void animation() {
   }
  }
 //Serial 
- void serialRead() {
-  if (Mega_serial.available()) {    // если данные получены
-  //  /^a^a^234^...^crc;   формат принимаемой строки 
-  //обработка crc
-    byte length = strlen(Mega_serial.buf);
-    byte crc_mega = crc8_bytes((byte*)&Mega_serial, length-1);  //расчёт crc входящего сообщения без последнего байта
-    byte crc_esp = (byte)(Mega_serial.buf[length-1]);   
-    if(crc_mega != crc_esp) 
-    {
-      serialWrite ("*");   
-      return;
-    }  
-
-  //обработка сообщения
-    char command1 = Mega_serial.buf[0]; 
-    byte am = Mega_parser.split();           //разделяeт строку на подстроки, заменяя разделители на NULL
-      Serial.print("message send nano = "); 
-      Serial.print(Mega_parser[0]);
-      Serial.print(" "); 
-      Serial.println((byte)Mega_parser[1]);
-    switch (command1)
-    {
-      case('a'):          //mode_light_bedroom
-        mode_light_bedroom = (byte)Mega_serial.buf[2];
-        this_mode = 4;
-        ONstate = true;
-        break;
-      default:
-        break;  
-    }
-    updateEEPROM();
-  }
- }
-
- void serialWrite (const char* mes) {
-   
-    SerialMega.write(mes, strlen(mes));
- }
-// функция для расчёта crc
- byte crc8_bytes(byte *buffer, byte size) {
-  byte crc = 0;
-  for (byte i = 0; i < size; i++) {
-    byte data = buffer[i];
-    for (int j = 8; j > 0; j--) {
-      crc = ((crc ^ data) & 1) ? (crc >> 1) ^ 0x8C : (crc >> 1);
-      data >>= 1;
-    }
-  }
-  return crc;
- }
+ 
 //EEPROM
  void updateEEPROM() {
   EEPROM.updateByte(1, this_mode);

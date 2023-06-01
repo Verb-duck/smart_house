@@ -1,6 +1,6 @@
 /*
  enum {
-    MAIN_LCD , MENU , BRIGHTNESS, MODE_LIGHTING, TEMPERATURE  , 
+    MAIN_LCD , MENU , BRIGHTNESS, MODE_LIGHTING, TEMPERATURE_VIEW  , 
   } mode_menu;
   
 */
@@ -60,7 +60,7 @@ void control_joustick(){
   }
   break;
 
-  case(TEMPERATURE) :
+  case(TEMPERATURE_VIEW) :
   if (joystick.click_up()) temperature_day += 1; 
   if (joystick.click_down()) temperature_day -= 1;
   
