@@ -4,7 +4,7 @@
 #include <ArduinoOTA.h>
 #include <Arduino.h>
 
-#define version "3.04 serial mega "
+#define version "3.04 serial esp "
 #define DEBUGING 1
  
 #define ssid  "5G OBLUCHATEL"
@@ -25,6 +25,8 @@ byte command;
 bool repeatOutMessage = false;
 byte lengthOutMessage = 0;
 
+#include <SoftwareSerial.h>
+SoftwareSerial mySerial(D3 , D4);   // RX, TX  
 #include "AsyncStream.h"
 #include "GParser.h"
 //макросы
@@ -228,7 +230,7 @@ template<int Size>
         return crc;
       }
   };
-  UartSerial<50> serial(&Serial);
+  UartSerial<50> serial(&mySerial);
 
 //enum
   //пронумерованны первые, что бы не пересеkалась нумераця при отправке по uart 
@@ -252,12 +254,11 @@ template<int Size>
   };
 
 void setup() { 
+  PRINT("version " , version);
+  Serial.begin(115200);
+  mySerial.begin(115200);
   bot.setChatID(284342215);  
   bot.attach(newMsg);  
-  Serial.begin(115200);
-  #if (DEBUGING == 1) 
-    PRINT("version " , version);
-  #endif
  //wifi connect
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, passwordW);
@@ -314,28 +315,33 @@ void setup() {
 void loop() {
   ArduinoOTA.handle();
   timeClient.update();    //getSeconds() getMinutes() getHours()
-  bot.tick();             //обработчик телеграмм бота    
+  bot.tick();                         //обработчик телеграмм бота  
+  static uint16_t timer = 0;
+  if(millis() - timer >= 20000)
+  {
+    timer += 20000;
+    serial.send<TIME ,SINCHRONIZATION> (timeClient.getHours(), timeClient.getMinutes(), timeClient.getSeconds()); 
+  
+  } 
 
 }
 //функции-обработчика сообщений телеграмм бота 
   void newMsg(FB_msg& msg){
     if (msg.OTA) bot.update();
   //обработка и запись в буфер цифр из чата
-    if (flagExpectMessage)    
-    {
-      lengthOutMessage = strlen(outBuff);
-      outBuff[lengthOutMessage++] = '^';
-      const char* inMessageBot = msg.text.c_str();
-      for (int i = 0; inMessageBot[i] != '\0' ; i++)    //пробегаем по сообщению
-      {	    
-        if (inMessageBot[i] >= '0' && inMessageBot[i] <= '9') //выписываем все цифры в строку, 
-          outBuff[lengthOutMessage++] = inMessageBot[i];      //обработка и разделение на стороне приёмника
-      }
-      flagExpectMessage = false;
-    }
+    // lengthOutMessage = strlen(outBuff);
+    // outBuff[lengthOutMessage++] = '^';
+    // const char* inMessageBot = msg.text.c_str();
+    // for (int i = 0; inMessageBot[i] != '\0' ; i++)    //пробегаем по сообщению
+    // {	    
+    //   if (inMessageBot[i] >= '0' && inMessageBot[i] <= '9') //выписываем все цифры в строку, 
+    //     outBuff[lengthOutMessage++] = inMessageBot[i];      //обработка и разделение на стороне приёмника
+    // }
+    // flagExpectMessage = false;
   //записываем в буффер сообщение
     if(msg.text[0] == '/')      
     {      
+      PRINT(" new message bot " , msg.text );
     //ищем совпадения и записываем в буфер команду
       //------temperature--------
         if(msg.text.lastIndexOf("/temperature_day") != -1)
@@ -396,18 +402,7 @@ void loop() {
         { 
           serial.send<TIME, ALARM_OFF>();
         }
-    }
-  //отправка данных в порт
-    if(!flagExpectMessage) 
-    {
-      //sendMessageMega();
-    } 
-  //если на дождались, закрываем возможность для приёма сообщений без '/'    
-    if(flagExpectMessage && millis() - timeRestartExpect > 5000)    
-    {
-      flagExpectMessage = false;       
-      outBuff[0] = '\0';                //обнуляем буффер чтобы не отправлять неполное сообщение
-    } 
+    }  
   }
 
 

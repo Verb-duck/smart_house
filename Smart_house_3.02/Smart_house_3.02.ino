@@ -1,4 +1,4 @@
-#define version "3.04 serial esp "
+#define version "3.04 serial mega "
 #define DEBUGING 1
 
 //--------настройка--------
