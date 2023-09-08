@@ -45,7 +45,7 @@
   #define BLACKTIME   3
 
  //---------UART---------------  
-  #include "SoftwareSerial.h"
+  #include <SoftwareSerial.h>
   SoftwareSerial SerialMega(7, 8);   // RX, TX    
   #include "AsyncStream.h"
   AsyncStream<40> Mega_serial(&SerialMega,';',100); 
@@ -734,11 +734,11 @@ void animation() {
 
   //обработка сообщения
     char command1 = Mega_serial.buf[0]; 
-    byte am = Mega_parser.split();           //разделяeт строку на подстроки, заменяя разделители на NULL
       Serial.print("message send nano = "); 
-      Serial.print(Mega_parser[0]);
+      Serial.print(Mega_serial.buf[0]);
       Serial.print(" "); 
-      Serial.println((byte)Mega_parser[1]);
+      Serial.println((byte)Mega_serial.buf[2]);
+    byte am = Mega_parser.split();           //разделяeт строку на подстроки, заменяя разделители на NULL
     switch (command1)
     {
       case('a'):          //mode_light_bedroom
