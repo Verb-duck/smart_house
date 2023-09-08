@@ -1,3 +1,4 @@
+//PRINT(" :", );
 
 #include <microDS18B20.h>
 template <uint8_t HEATER_PIN , uint8_t DS_PIN = 255, uint8_t *DS_ADDR = (uint8_t*)nullptr>
@@ -64,9 +65,13 @@ class Heater  {
         }        
       } 
     }
-    else  flag_heater = false;
+    else  {
+      flag_heater = false;
+    //дописать возврат ошибки
+    }
 
     digitalWrite(_pin_heater, flag_heater);
+    //PRINT("flag_heater: ", flag_heater);
   }
 };
 

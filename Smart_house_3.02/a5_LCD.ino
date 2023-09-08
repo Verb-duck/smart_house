@@ -12,8 +12,8 @@ void lcd_imagin () {
   {
     case (MAIN_LCD) :
     LCD.setCursor(0, 0);    time_show ();
-    LCD.setCursor(0, 1);    alarm_clock_show();
-    LCD.setCursor(0, 2);    temperature_show ( FULL_STRING );
+    //LCD.setCursor(0, 1);    alarm_clock_show();
+    LCD.setCursor(0, 1);    temperature_show ( FULL_STRING );
     LCD.setCursor(0, 3);   
     break;
     

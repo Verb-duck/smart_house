@@ -1,5 +1,6 @@
 #define ver "3.03 "
 #define DEBUGING 1
+#define key_EEPROM 16  // запись/сброс настроек в EEPROM при прошивке, сменить число
 
 //--------настройка--------
 #define PERIOD_SENSOR_TEMPERATURE 1  //время опроса датчика температуры сек
@@ -11,7 +12,6 @@
 #define setTime_second 1
 #define setTime_minute 2
 #define setTime_hour 3
-#define key_EEPROM 1  // запись/сброс настроек в EEPROM при прошивке, сменить число
 
 //---------пины--------
 #define ZERO_CROSS 1        //детектор ноля в 220в,  не используется
@@ -41,9 +41,9 @@
 //-------pair struct
   #include <EEPROM.h>
   template<class Type>  
-     struct pair {
+    struct pair {
 	  Type value;
-	  int addr;
+	  int addr; 
 	  pair(Type f = Type(), int s = 255) : value(f), addr(s) {}	
     void operator =(Type value) 
     {
@@ -74,25 +74,37 @@
     pair<Type> create (const Type value, typeValue type) {
   	  int count_addr = next_addr;
   	  next_addr += (int)type;
-    	return pair<Type> (value, count_addr);	
+    // следующая строка заглушка, 13 и 14 адреса при перезагрузке неправильно считывает, возможно что то записывает, но что?
+      if ( next_addr == 13) next_addr = 15; 
+    	return pair<Type> (value, count_addr);
+      	
     }
+
 
   template <class Type>
   bool writeEEPROM (pair<Type> &pp ) {
     EEPROM.update(pp.addr,pp.value) ;
+    Serial.print("pp.addr: "); 
+    Serial.print(pp.addr); 
+    Serial.print("pp.value: "); 
+    Serial.println(pp.value);    
   return 0;
   } 
 
   template <class Type>
   bool readEEPROM (pair<Type> &pp ) {
     EEPROM.get(pp.addr,pp.value) ;
+    Serial.print("pp.addr: "); 
+    Serial.print(pp.addr); 
+    Serial.print("pp.value: "); 
+    Serial.println(pp.value); 
   return 0;
   } 
  
 //---------переменные--------
 //----temperature
-auto temperature_day  = create(210,INT);             //температура дня, *10 -> уйти от float
-auto temperature_night = create (190,INT);           //температура ночи
+auto temperature_day  = create(220,INT);             //температура дня, *10 -> уйти от float
+auto temperature_night = create (210,INT);           //температура ночи
 auto temperature_day_off = create(200,INT);         //температура простоя
 auto temperature_sunrise = create(200,INT);         //температура для подъёма
 auto temperature_our_house = create(20,INT);       //температура если уехал
