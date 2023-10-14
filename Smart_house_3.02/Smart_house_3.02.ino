@@ -16,8 +16,8 @@
 //---------пины--------
 #define ZERO_CROSS 1        //детектор ноля в 220в,  не используется
 #define IR_PIN 18           //ИК приёмник
-#define HEATER_PIN_1 22     //обогреватель 1
-#define HEATER_PIN_2 23     //обогреватель 2
+#define HEATER_PIN_1 22     //обогреватель 1, половина возле двери
+#define HEATER_PIN_2 23     //обогреватель 2, вторая половина
 #define DC18B20_PIN 24      //пин для термометров
 #define LED_PIN 27          //лента контур
 #define LED_PIN_CENTR 28    //лента центр

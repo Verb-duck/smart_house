@@ -2,7 +2,7 @@
  void serialReadEsp() {
   if (ESP_serial.available()) {    // если данные получены
   //  /^a^a^234^...^crc;   формат принимаемой строки 
-    //PRINT("new message ", ESP_serial.buf);    
+    PRINT("new message ", ESP_serial.buf);    
 
   //обработка crc
     byte length = strlen(ESP_serial.buf);

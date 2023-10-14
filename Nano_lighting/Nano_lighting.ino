@@ -14,12 +14,9 @@
   #define FASTLED_ALLOW_INTERRUPTS 1
   #include "FastLED.h"
   //-----leds_contur---
-  #define LED_NUM 115        // количество светодиодов (данная версия поддерживает до 410 штук)
+  #define LED_NUM 190        // количество светодиодов (данная версия поддерживает до 410 штук)
   CRGB leds[LED_NUM];
-  //----leds_centr----
-  #define LED_NUM_CENTR 40
-  CRGB leds_centr[LED_NUM_CENTR];
-  //----для будильника------
+    //----для будильника------
   #define COOLING  70    //длина пламени  
   #define SPARKING 150   //искры
   bool gReverseDirection = false;
@@ -61,7 +58,6 @@
   #define MLED_ON HIGH
   #define LED_PIN 4              // пин DI светодиодной ленты
   #define IR_PIN 3                // пин ИК приёмника
-  #define LED_PIN_CENTR 9    //лента центр
 
 
  // ----- настройки радуги 
@@ -219,7 +215,7 @@
 
   #include <EEPROMex.h> 
 
-  #include "IRLremote.h"
+  #include <IRLremote.h>
   CHashIR IRLremote;
   uint32_t IRdata;
 
@@ -295,7 +291,6 @@ void setup() {
   SerialMega.begin(9600);
  //---------лента 2811------- 
   FastLED.addLeds<WS2811, LED_PIN, BRG>(leds, LED_NUM).setCorrection( TypicalLEDStrip );
-  FastLED.addLeds<WS2811, LED_PIN_CENTR, BRG>(leds_centr, LED_NUM_CENTR).setCorrection( TypicalLEDStrip );
   FastLED.setBrightness(Brightness);
   FastLED.clear();
   FastLED.show();   
@@ -827,27 +822,20 @@ void animation() {
 //заполнение цветом  
  void full_paint (const int color , const int saturation, const int hue ) {
   for (int i = 0; i < LED_NUM; i++)         leds[i].setRGB(color, saturation, hue);
-  for (int i = 0; i < LED_NUM_CENTR; i++)   leds_centr[i].setRGB(color, saturation, hue);
-
  }
  void start_paint (const int color, const int saturation, const int hue, uint8_t next ) {
    static uint8_t LED_LEFT =  LED_NUM / 2; 
    static uint8_t LED_RIGHT =  LED_NUM / 2;
-   static uint8_t LED_CENTR;
    {PERIOD (300) { 
     if( LED_RIGHT < LED_NUM) {
       leds[LED_RIGHT++].setRGB( color, saturation ,hue); 
       leds[LED_LEFT--].setRGB( color, saturation ,hue); 
     }
-    if (LED_RIGHT >= 79) {
-      leds_centr[LED_CENTR++].setRGB( color, saturation ,hue);   
-    }
    }}
-   if (LED_CENTR == LED_NUM_CENTR)  {
+   if (LED_RIGHT == LED_NUM)  {
     mode_light_bedroom = next;
     LED_LEFT =  LED_NUM / 2;
     LED_RIGHT =  LED_NUM / 2;
-    LED_CENTR = 0;
    }
   } 
 // вспомогательная функция, изменяет величину value на шаг incr в пределах minimum.. maximum

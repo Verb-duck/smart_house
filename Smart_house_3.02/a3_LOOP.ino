@@ -4,7 +4,7 @@ void loop() {
  timeNow = rtc.getTime();               //запись времени в структуру
  accomplishment_script_house ();      //режимы работы  
  lcd_imagin ();                        //вывод на экран
- control_joustick();                  //дописать нормально
+ //control_joustick();                  //дописать нормально
  dimmer_temp ();
  serialReadEsp();
  serialReadNano(); 
