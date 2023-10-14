@@ -86,7 +86,7 @@
     EEPROM.update(pp.addr,pp.value) ;
     Serial.print("pp.addr: "); 
     Serial.print(pp.addr); 
-    Serial.print("pp.value: "); 
+    Serial.print(" pp.value: "); 
     Serial.println(pp.value);    
   return 0;
   } 
