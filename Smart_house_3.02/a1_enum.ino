@@ -7,7 +7,7 @@ enum MODE_MENU {
 enum SCRIPT_HOUSE { 
   FIRST_SCRIP, MOVE,  SLEEP, VIEWING_FILM, OUTSIDE_THE_HOME, NIGHT_MOVE , NO_MOVE, SUNRISE, LAST_SCRIP,
 } ;
-auto script_house (create(NO_MOVE, ENUM));       //режим работы,создание пары (значение,адрес)
+auto script_house (create(NO_MOVE, 13,"script house"));       //режим работы,создание пары (значение,адрес)
 SCRIPT_HOUSE last_script_house  = FIRST_SCRIP; 
 
 enum MODE_LIGHT_BEDROM {   //нулевой не отправляет по сериал, NULL_LIGHT как заглушка

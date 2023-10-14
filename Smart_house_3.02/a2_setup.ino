@@ -41,6 +41,8 @@ void setup() {
     writeEEPROM(temperature_day_off);  
     writeEEPROM(temperature_sunrise);
     writeEEPROM(temperature_our_house);       
+    writeEEPROM(alarmClockH);
+    writeEEPROM(alarmClockM);
     writeEEPROM(work_alarm_clock);      
     writeEEPROM(script_house);
     PRINT("update EEPROM settings", " " );
@@ -50,7 +52,9 @@ void setup() {
     readEEPROM(temperature_night);  
     readEEPROM(temperature_day_off);  
     readEEPROM(temperature_sunrise);
-    readEEPROM(temperature_our_house);       
+    readEEPROM(temperature_our_house);   
+    readEEPROM(alarmClockH);    
+    readEEPROM(alarmClockM);
     readEEPROM(work_alarm_clock);      
     readEEPROM(script_house);   
     PRINT("read EEPROM settings", " " );
@@ -58,6 +62,5 @@ void setup() {
 //  
   delay(2000);
   LCD.clear();
-  PRINT("script_house: ", script_house.value );
 }
 //_______________________*SETUP*_____________________

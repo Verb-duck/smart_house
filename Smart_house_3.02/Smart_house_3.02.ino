@@ -1,7 +1,7 @@
-#define ver "3.03 "
+#define ver "3.04 "
 #define DEBUGING 1
-#define key_EEPROM 16  // запись/сброс настроек в EEPROM при прошивке, сменить число
-
+#define key_EEPROM 22  // запись/сброс настроек в EEPROM при прошивке, сменить число
+                       // свободная ячейка 19, незабудь добавить в setup в чтение памяти
 //--------настройка--------
 #define PERIOD_SENSOR_TEMPERATURE 1  //время опроса датчика температуры сек
 #define TIME_SUNRISE 20              //время включения рассвета до будильника
@@ -38,76 +38,81 @@
 #define STIK_X_PIN A11
 #define PHOTO_SENSOR A12  //датчик освещённости
 
-//-------pair struct
-  #include <EEPROM.h>
-  template<class Type>  
-    struct pair {
-	  Type value;
-	  int addr; 
-	  pair(Type f = Type(), int s = 255) : value(f), addr(s) {}	
-    void operator =(Type value) 
-    {
-      this->value = value; 
-      writeEEPROM( *this);
+#include <EEPROM.h>
+template<class Type>
+struct pair {
+    Type value;
+    int addres;
+    char* name;
+    pair(Type value = Type(), int addres = 255, char* enter_name = "free") : value(value), addres(addres) {
+        size_t size = 0;
+        while (enter_name[size]) {
+            size++;
+        }
+        size++;
+        name = new char[size];
+        size = 0;
+        while (enter_name[size]) {
+            name[size] = enter_name[size];
+            size++;
+        }
+        name[size] = '\0';
     }
-    void operator +=(Type value) 
+    void operator =(Type value)
     {
-      this->value += value; 
-      writeEEPROM( *this);
+        this->value = value;
+        writeEEPROM(*this);
     }
-    void operator -=(Type value) 
+    void operator +=(Type value)
     {
-      this->value -= value; 
-      writeEEPROM( *this);
+        this->value += value;
+        writeEEPROM(*this);
     }
-    
-  };
-  enum typeValue {
-  	BOOL = 1,  //1 byte 
-  	INT = 2,   //2 byte
+    void operator -=(Type value)
+    {
+        this->value -= value;
+        writeEEPROM(*this);
+    }
+
+};
+enum typeValue {
+    BOOL = 1,  //1 byte 
+    INT = 2,   //2 byte
     ENUM = 2,
-  	FLOAT = 4, // 4 byte 
-  };
-  //создание переменной с присвоением адреса в EEPROM
-  	int next_addr = 2;       //0 занят для key_EEPROM
-    template <class Type>
-    pair<Type> create (const Type value, typeValue type) {
-  	  int count_addr = next_addr;
-  	  next_addr += (int)type;
-    // следующая строка заглушка, 13 и 14 адреса при перезагрузке неправильно считывает, возможно что то записывает, но что?
-      if ( next_addr == 13) next_addr = 15; 
-    	return pair<Type> (value, count_addr);
-      	
-    }
+    FLOAT = 4, // 4 byte 
+};
+//создание переменной с присвоением адреса в EEPROM
+int next_addr = 2;       //0 занят для key_EEPROM
+template <class Type>
+pair<Type> create(const Type value, const int addres, const char* name) {
+    return pair<Type>(value, addres, name);
 
+}
 
-  template <class Type>
-  bool writeEEPROM (pair<Type> &pp ) {
-    EEPROM.update(pp.addr,pp.value) ;
-    Serial.print("pp.addr: "); 
-    Serial.print(pp.addr); 
-    Serial.print(" pp.value: "); 
-    Serial.println(pp.value);    
-  return 0;
-  } 
+template <class Type>
+bool writeEEPROM(pair<Type>& pp) {
+    EEPROM.update(pp.addres, pp.value);
+    Serial.print(pp.name);
+    Serial.print(" ");
+    Serial.println(pp.value);
+    return 0;
+}
 
-  template <class Type>
-  bool readEEPROM (pair<Type> &pp ) {
-    EEPROM.get(pp.addr,pp.value) ;
-    Serial.print("pp.addr: "); 
-    Serial.print(pp.addr); 
-    Serial.print("pp.value: "); 
-    Serial.println(pp.value); 
-  return 0;
-  } 
- 
+template <class Type>
+bool readEEPROM(pair<Type>& pp) {
+    EEPROM.get(pp.addres, pp.value);
+    Serial.print(pp.name);
+    Serial.print(" ");
+    Serial.println(pp.value);
+    return 0;
+}
 //---------переменные--------
 //----temperature
-auto temperature_day  = create(220,INT);             //температура дня, *10 -> уйти от float
-auto temperature_night = create (210,INT);           //температура ночи
-auto temperature_day_off = create(200,INT);         //температура простоя
-auto temperature_sunrise = create(200,INT);         //температура для подъёма
-auto temperature_our_house = create(20,INT);       //температура если уехал
+auto temperature_day  = create(220,2,"temp day");             //температура дня, *10 -> уйти от float
+auto temperature_night = create (200,4,"temp night");           //температура ночи
+auto temperature_day_off = create(200,6,"temp day off");         //температура простоя
+auto temperature_sunrise = create(210,8,"temp sunrise");         //температура для подъёма
+auto temperature_our_house = create(20,10,"temp our house");       //температура если уехал
 float temperature_now;                             //температура измерения
 //----lighting----
 uint8_t random_color;
@@ -116,7 +121,7 @@ uint8_t light_color_now = 30;
 uint8_t light_saturation_now = 180;
 uint8_t Brightness;
 //----clock----
-auto work_alarm_clock(create(false,BOOL));  // вкл/выкл будильник
+auto work_alarm_clock(create(false,12,"work alarm clock"));  // вкл/выкл будильник
 //-----menu------
 static uint32_t time_remove_mainLcd;  //переменная времени для возврата на главный экран
 static uint32_t time_backlight_lcd;   //переменная выключения подсветки экрана
