@@ -1,6 +1,6 @@
-#define ver "3.04 "
+#define ver "3.05 "
 #define DEBUGING 1
-#define key_EEPROM 22  // запись/сброс настроек в EEPROM при прошивке, сменить число
+#define key_EEPROM 33  // запись/сброс настроек в EEPROM при прошивке, сменить число
                        // свободная ячейка 19, незабудь добавить в setup в чтение памяти
 //--------настройка--------
 #define PERIOD_SENSOR_TEMPERATURE 1  //время опроса датчика температуры сек
@@ -12,12 +12,13 @@
 #define setTime_second 1
 #define setTime_minute 2
 #define setTime_hour 3
-
+#define TEMPERATURE_DAY 22
+#define TEMPERATURE_NIGHT 19
 //---------пины--------
 #define ZERO_CROSS 1        //детектор ноля в 220в,  не используется
 #define IR_PIN 18           //ИК приёмник
-#define HEATER_PIN_1 22     //обогреватель 1, половина возле двери
-#define HEATER_PIN_2 23     //обогреватель 2, вторая половина
+#define HEATER_PIN_1 23     //обогреватель 1, половина возле двери
+#define HEATER_PIN_2 24     //обогреватель 2, вторая половина
 #define DC18B20_PIN 24      //пин для термометров
 #define LED_PIN 27          //лента контур
 #define LED_PIN_CENTR 28    //лента центр
@@ -37,7 +38,6 @@
 #define STIK_Y_PIN A10      //joostic
 #define STIK_X_PIN A11
 #define PHOTO_SENSOR A12  //датчик освещённости
-
 #include <EEPROM.h>
 template<class Type>
 struct pair {
@@ -73,7 +73,6 @@ struct pair {
         this->value -= value;
         writeEEPROM(*this);
     }
-
 };
 enum typeValue {
     BOOL = 1,  //1 byte 
@@ -91,7 +90,7 @@ pair<Type> create(const Type value, const int addres, const char* name) {
 
 template <class Type>
 bool writeEEPROM(pair<Type>& pp) {
-    EEPROM.update(pp.addres, pp.value);
+    EEPROM.put(pp.addres, pp.value);
     Serial.print(pp.name);
     Serial.print(" ");
     Serial.println(pp.value);
@@ -108,8 +107,8 @@ bool readEEPROM(pair<Type>& pp) {
 }
 //---------переменные--------
 //----temperature
-auto temperature_day  = create(220,2,"temp day");             //температура дня, *10 -> уйти от float
-auto temperature_night = create (200,4,"temp night");           //температура ночи
+auto temperature_day  = create(TEMPERATURE_DAY * 10,2,"temp day");             //температура дня, *10 -> уйти от float
+auto temperature_night = create (TEMPERATURE_NIGHT * 10,4,"temp night");           //температура ночи
 auto temperature_day_off = create(200,6,"temp day off");         //температура простоя
 auto temperature_sunrise = create(210,8,"temp sunrise");         //температура для подъёма
 auto temperature_our_house = create(20,10,"temp our house");       //температура если уехал
