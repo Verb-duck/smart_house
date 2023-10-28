@@ -45,8 +45,7 @@ class Heater  {
     flag_retenion_temp = false; 
   }
   void work(float temperature_now) {
-    //if(request_sensor ()) {
-      if(1) {
+    if(request_sensor ()) {
        if ( !flag_retenion_temp) {             //и подгоняем температуру
          if ( *temperature_set > temperature_now * 10)  flag_heater = true;
          else   flag_heater = false;
