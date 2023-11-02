@@ -30,9 +30,10 @@ void setup() {
   #elif ( TIME_SETUP == 2)
     now.second = setTime_second; now.minute = setTime_minute; now.hour = setTime_hour;
     rtc.setTime(now);  
-  #endif   
- 
-
+  #endif
+//---------Watchdog-----------
+  wdt_disable();   
+  wdt_enable(WDTO_4S);          //4s WDTO_4S, 8s WDTO_8S 
 //---------чтение/запиись настроек в еепром
   if(key_EEPROM != EEPROM.read(0)){     //запись в еепром
     PRINT("update EEPROM settings", " " );

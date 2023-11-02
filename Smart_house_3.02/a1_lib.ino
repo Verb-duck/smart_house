@@ -1,5 +1,6 @@
 
-
+//-------- Watchdog---------
+ #include "avr/wdt.h"                   //таймер для перезагрузки при зависании
 //-------- iremote-----------
  #include "IRLremote.h"
   CHashIR IRLremote;

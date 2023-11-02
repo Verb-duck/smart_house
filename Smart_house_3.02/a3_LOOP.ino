@@ -1,9 +1,10 @@
 
 
 void loop() {
- timeNow = rtc.getTime();               //запись времени в структуру
+ wdt_reset();                         //Watchdog,сброс таймера для перезагрузки при зависании
+ timeNow = rtc.getTime();             //запись времени в структуру
  accomplishment_script_house ();      //режимы работы  
- lcd_imagin ();                        //вывод на экран
+ lcd_imagin ();                       //вывод на экран
  control_joustick();                  //дописать нормально
  dimmer_temp ();
  serialReadEsp();
