@@ -1,31 +1,28 @@
-#include <ESP8266WiFi.h>
-#include <ESP8266mDNS.h>
-#include <WiFiUdp.h>
-#include <ArduinoOTA.h>
+#include <WiFiUdp.h>      //http time
 #include <Arduino.h>
 
- 
-#define ssid  "5G OBLUCHATEL"
-#define passwordW "00000000"
+#include "WiFi_connect.h"  //моя библиотека ВиФи и мкьютт
+//создадим всего один объект mqtt клиента 
+  mqttObject& mqttDevice = mqttObject::generate("esp_head/" ,"bedroom/" );
 
 //http time
 #include <NTPClient.h>
-const long utcOffsetInSeconds = 10800;
-WiFiUDP ntpUDP;
+  const long utcOffsetInSeconds = 10800;
+  WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 
 #include <FastBot.h>
-FastBot bot("6130227271:AAHMnTK8NFMRnXyOqVDUXeMPnWHVo__k3nI"); 
-bool flagExpectMessage = false;     //expect message service
-int timeRestartExpect;
-char outBuff[20];             //buff save and send message
-bool repeatOutMessage = false;
-byte lengthOutMessage = 0;
+  FastBot bot("6130227271:AAHMnTK8NFMRnXyOqVDUXeMPnWHVo__k3nI"); 
+  bool flagExpectMessage = false;     //expect message service
+  int timeRestartExpect;
+  char outBuff[20];             //buff save and send message
+  bool repeatOutMessage = false;
+  byte lengthOutMessage = 0;
 
 //-------serial-----
-  #include "AsyncStream.h"
+#include "AsyncStream.h"
   AsyncStream<40> Mega_serial(&Serial,';',100); 
-  #include "GParser.h"
+#include "GParser.h"
   GParser Mega_parser(Mega_serial.buf, '^');
 
 
@@ -33,47 +30,7 @@ void setup() {
   bot.setChatID(284342215);  
   bot.attach(newMsg);  
   Serial.begin(115200);
-//wifi connect
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, passwordW);
-  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    Serial.println("Connection Failed! Rebooting...");
-    delay(5000);
-    ESP.restart();
-  }
-  ArduinoOTA.onStart([]() {
-    String type;
-    if (ArduinoOTA.getCommand() == U_FLASH) {
-      type = "sketch";
-    } else { // U_FS
-      type = "filesystem";
-    }
 
-    // NOTE: if updating FS this would be the place to unmount FS using FS.end()
-    Serial.println("Start updating " + type);
-  });
-  ArduinoOTA.onEnd([]() {
-    Serial.println("\nEnd");
-  });
-  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-  });
-  ArduinoOTA.onError([](ota_error_t error) {
-    Serial.printf("Error[%u]: ", error);
-    if (error == OTA_AUTH_ERROR) {
-      Serial.println("Auth Failed");
-    } else if (error == OTA_BEGIN_ERROR) {
-      Serial.println("Begin Failed");
-    } else if (error == OTA_CONNECT_ERROR) {
-      Serial.println("Connect Failed");
-    } else if (error == OTA_RECEIVE_ERROR) {
-      Serial.println("Receive Failed");
-    } else if (error == OTA_END_ERROR) {
-      Serial.println("End Failed");
-    }
-  });
-  ArduinoOTA.begin();
-  ArduinoOTA.setPassword(passwordW);
   
 //отправка времени на мегу
   delay(2000);
@@ -92,7 +49,7 @@ void setup() {
 }
 
 void loop() {
-  ArduinoOTA.handle();
+  WiFi_loop();            //проверка подключения
   timeClient.update();    //getSeconds() getMinutes() getHours()
   bot.tick();             //обработчик телеграмм бота    
   SerialRead(); 
