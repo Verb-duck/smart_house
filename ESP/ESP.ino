@@ -1,7 +1,7 @@
 #include <WiFiUdp.h>      //http time
 #include <Arduino.h>
 
-#include "WiFi_connect.h"  //моя библиотека ВиФи и мкьютт
+#include <WiFi_connect.h>  //моя библиотека ВиФи и мкьютт
 //создадим всего один объект mqtt клиента 
   mqttObject& mqttDevice = mqttObject::generate("esp_head/" ,"bedroom/" );
 
@@ -27,19 +27,16 @@ NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 
 
 void setup() { 
+  Serial.begin(115200);
+  WiFi_connected();				    //подключение к ВиФи
   bot.setChatID(284342215);  
   bot.attach(newMsg);  
-  Serial.begin(115200);
 
-  
-//отправка времени на мегу
-  delay(2000);
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
+  delay(1000);
   timeClient.begin();  
   timeClient.update(); 
   delay(10); 
- //updateTime mega
+//отправка времени на мегу по Uart
   outBuff[0] = '\0';
   strcat(outBuff, "/^b^a"); 
   writeIntInBuff(timeClient.getHours());
@@ -164,12 +161,14 @@ void loop() {
   }
 //отправка сообщения на мегу
   void sendMessageMega (){
+    Serial.print(";");            //завершение после отправки мусорных сообщений системы
     lengthOutMessage = strlen(outBuff);
     outBuff[lengthOutMessage++] = '^';
     byte crc = crc8_bytes((byte*)&outBuff,lengthOutMessage);
     outBuff[lengthOutMessage++] = crc;
     outBuff[lengthOutMessage++] = ';';
-    Serial.write(outBuff, lengthOutMessage);     //send messege      
+    Serial.write(outBuff, lengthOutMessage);     //send messege   
+    Serial.println();   
   }
 //чтение данных от Mega
   void SerialRead() {
